@@ -1,10 +1,10 @@
 {
-  "name": "octwin",
+  "name": "octwin-claude-marketplace",
   "owner": { "name": "CEQUENS" },
   "plugins": [
     {
-      "name": "octwin-pack",
-      "source": ".",
+      "name": "octwin-pack-author",
+      "source": "./",
       "description": "Author pure-YAML Octwin packs (WhatsApp/web conversational bots) and deploy them with octwin-cli."
     }
   ]

@@ -57,6 +57,13 @@ not exhaustive; the KB is authoritative.
 
 ## Step 1 — Author the domain
 
+> **Build a product, not a bag of tools.** Every pack ships a **`home` flow** — the menu / navigation hub the
+> agent calls on a greeting or unclear message, wired FIRST in `manifest.flows` and the agent's `tools`. Menus
+> lead with **icons** (emoji), photo lists render as a **carousel**, and any **committing action confirms first**
+> (the `approve_apply` preview → ✅/❌). These are the expected patterns, not extras — read
+> **[references/ux-patterns.md](references/ux-patterns.md)** before you build the flows. (`octwin init` scaffolds
+> the home hub for you; extend it.)
+
 Decisions to make, each with its contract (details in the references):
 
 ### Manifest (`manifest.yaml`)
@@ -92,14 +99,17 @@ AI-generated images). See [references/data-and-render.md](references/data-and-re
 The agent expresses **domain intent** and calls flow-tools; it stays channel-agnostic. The prompt says
 *when* to call a tool; the tool's returned envelope controls *what happens next*. Keep it brief.
 
-## Step 2 — Validate locally
+## Step 2 — Validate
 
 ```bash
-octwin validate            # structure + pure-YAML rules, offline
+octwin validate            # structure + pure-YAML rules, offline (fast, no server)
+octwin validate --remote   # + the platform's FULL manifest + flow-DSL check — ALL errors at once
 ```
 
-Fix anything it flags. The platform re-validates the **full** manifest + flow schema on deploy, so a
-local pass is necessary but the deploy is the final word.
+`octwin validate` is an offline structural pre-check. Once you've `octwin login`'d, run
+**`octwin validate --remote`** to run the *exact* validation `deploy` runs (manifest `.strict()` + every flow's
+schema/expression/structure) and get **every** error in one pass — so you fix them all before deploying instead
+of one per failed deploy. (`octwin test` is an alias for `validate --remote`.)
 
 ## Step 3 — Deploy + test on your tenant
 

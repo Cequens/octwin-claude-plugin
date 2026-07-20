@@ -15,8 +15,8 @@ your tenant — all pure YAML, no TypeScript.
 This is distributed as a **Claude Code plugin via a marketplace** (not npm). In Claude Code:
 
 ```
-/plugin marketplace add Cequens/octwin-claude-plugin      # the git repo hosting this plugin
-/plugin install octwin-pack@octwin           # plugin "octwin-pack" from the "octwin" marketplace
+/plugin marketplace add Cequens/octwin-claude-plugin                 # the git repo hosting this plugin
+/plugin install octwin-pack-author@octwin-claude-marketplace         # plugin "octwin-pack-author" (bundles the octwin-pack skill)
 ```
 
 Then just ask, e.g.:

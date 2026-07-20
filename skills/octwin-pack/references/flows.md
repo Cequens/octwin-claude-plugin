@@ -93,14 +93,34 @@ Set `render_intent:` on a `render:` node. The renderer applies per-channel caps 
 page, or read a channel limit in YAML.** Valid intents include `text_card`, `list_picker`,
 `buttons_picker`, `carousel`, `detail_card`, `cta_url`, `flow_form`.
 
-- **Picker vs card.** Pickers (`list_picker`, `buttons_picker`) render a homogeneous collection and
-  require `items:` + `item_template:`. Cards (`detail_card`, `carousel`) render pre-composed content;
-  `detail_card` takes an explicit `buttons:` array.
+- **Picker vs card.** Pickers (`list_picker`, `buttons_picker`) render a homogeneous list of choices; cards
+  (`carousel`, `detail_card`) render pre-composed content. A static menu uses **inline `items:` rows**; a
+  data-driven list uses `items: '$rows'` + an `item_template:`.
 - **Text list vs image carousel** — pick by whether the rows carry a photo. No image → `list_picker`.
   Each row has a photo → `carousel` with an `item_template` mapping the image field into `image_url:`.
 
+### Where `on_select` goes (the tap handler)
+
+A tap is wired with `on_select` — but WHERE it lives depends on the render intent. This is the single most
+common render mistake, so learn the table:
+
+| Intent | `on_select` lives… | Shape |
+|---|---|---|
+| `list_picker` (static menu) | on each **inline `items[]` row** | `- { title, description?, on_select: { invoke: <flow_id>, with?: {…} } }` |
+| `list_picker` / `buttons_picker` (data-driven) | in **`item_template.on_select`** (`items: '$rows'`) | `item_template: { title, on_select: { invoke: <flow_id>, with: {…} } }` |
+| `carousel` | inside each card's **`item_template.buttons[]`** | `buttons: [ { title, on_select: { invoke: <flow_id>, with: {…} } } ]` |
+| `detail_card` | in the card's **`buttons[]`** array | `buttons: [ { title, on_select: {…} } ]` |
+
+`on_select` verbs: **`invoke: <flow_id>`** (route the tap straight to another tool — the home-hub + drill-down
+default), **`resume: '$self'`** (continue THIS flow after a `pause`; carries `with:` / `control:` — the confirm
+pattern), `reply` / `agent` (hand back to the agent). The renderer supplies an identity default for BOTH pickers,
+so a static `list_picker`/`buttons_picker` needs **no `item_template`** — the row's own `on_select` is used
+as-is. (Both the static-row and the data-driven `item_template.on_select` paths work for list_picker AND
+buttons_picker.)
+
 Full contrast + the `record_list` page shape (`{ rows, total, … }`, `all:`, `active_only`, `sort_by`):
-[data-and-render.md](data-and-render.md).
+[data-and-render.md](data-and-render.md). The home-hub, icons/images, and confirmation patterns:
+[ux-patterns.md](ux-patterns.md).
 
 ## Locale (`flows/tools/<flow>.locale.<lang>.yaml`)
 
