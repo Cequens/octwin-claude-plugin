@@ -54,8 +54,15 @@ from `.octwin/platform-kb/` after `octwin platform-kb pull`, and falls back to t
 
 ## Maintainers
 
-The bundled KB snapshot is regenerated from the platform with `npm run sync:plugin-kb` (after
-`npm run platform-kb`) and committed. Re-sync when the platform stdlib changes.
+Update + publish this plugin in **one command** from the platform monorepo:
+
+```bash
+npm run plugin:publish          # regenerate the platform KB → refresh the bundled snapshot → push here
+npm run plugin:publish -- --dry-run   # preview the diff without pushing
+```
+
+It's a clean **no-op when nothing changed** (the snapshot is deterministic), so it's safe to run any time —
+run it whenever the platform stdlib (primitives / templates / flow-DSL / channels) changes.
 
 ## License
 
