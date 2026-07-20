@@ -107,6 +107,41 @@
       "shape": "doc"
     },
     {
+      "key": "worklist-guide",
+      "title": "Worklist",
+      "summary": "The worklist engine authoring reference — worklist.yaml queues + work item types (what casework is a preset over).",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "journey-guide",
+      "title": "Journeys",
+      "summary": "Customer-journey analytics — declare journeys/<id>.journey.yaml (stages/goals/events); flows emit progress via the `track:` node / track_event. A journey run is an XRM record.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "rbac-guide",
+      "title": "RBAC / roles",
+      "summary": "roles.yaml — custom roles + grants; how roles gate console access + record-level access to the pack XRM entities (platform-enforced, no author primitive).",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "surveys-guide",
+      "title": "Surveys",
+      "summary": "surveys.yaml — declarative surveys submitted via survey_submit; responses land as the survey_response system entity.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "automation-guide",
+      "title": "Automation",
+      "summary": "automation.yaml — standing scheduled/triggered jobs the platform runs for the pack.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
       "key": "builtins",
       "title": "Expression builtins",
       "summary": "Expression-language builtins ($lines, $map, $shape, …) usable in any flow expression.",
