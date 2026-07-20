@@ -86,9 +86,11 @@ steps:
 - **Never** `.slice()` the rows to a channel cap or read "how many rows fit" — the renderer clamps and
   pages per channel. Return everything + one render intent.
 
-## Support tickets — `cases.yaml`
+## Support tickets / casework — `worklist.yaml`
 
-For a "problem to resolve" (not a pipeline you own), declare `cases.yaml` with `queues` + `types`
-(routing, priority, SLA, dispositions) and use `case_open` / `case_reply` / `case_transition` /
-`case_list` in flows. Tickets are worked by humans in the Octwin console and mediated to the customer
-by the agent.
+For a "problem to resolve" (not a pipeline you own), declare **`worklist.yaml`** with `queues` + `work`
+item types (routing, SLA, dispositions) — the platform ships a `case` system entity and a **casework
+preset**, so casework is a preset over the worklist engine (there is no `cases.yaml`). Use `case_open` /
+`case_reply` / `case_transition` / `case_list` in flows. Tickets are worked by humans in the Octwin
+console and mediated to the customer by the agent. Exact schema: the `worklist` entry in the platform
+KB `declarations` catalog + the casework guide (Step 0.5).

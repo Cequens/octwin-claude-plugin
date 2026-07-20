@@ -40,7 +40,7 @@ current list (with exact inputs + output ports) is in the platform KB — see [c
 
 - **Records** (with `xrm.yaml`): `record_save`, `record_get`, `record_list`, `record_search`,
   `record_stage`, `record_note`, `task_open` / `task_complete` / `task_list`.
-- **Tickets** (with `cases.yaml`): `case_open`, `case_get`, `case_list`, `case_reply`, `case_transition`.
+- **Tickets / casework** (with `worklist.yaml`): `case_open`, `case_get`, `case_list`, `case_reply`, `case_transition`.
 - **Messaging / misc:** `notify` (send a proactive message), plus catalog/cart/order and scheduling
   built-ins when those modules are declared.
 

@@ -1,0 +1,505 @@
+{
+  "version": "1.0",
+  "description": "The platform-provided (system) XRM entities every pack has for free — product/cart/order/case/booking/survey_response/campaign, with typed fields + stage pipelines + status transitions. A pack composes flows over these (via the record_*/cart_*/order_*/booking_*/case_* primitives) or extends them in its own xrm.yaml (extends: system). Serialized from the parsed system-entity spec — always current.",
+  "entities": {
+    "order": {
+      "label": {
+        "en": "Order",
+        "ar": "طلب"
+      },
+      "fields": {
+        "reference_id": {
+          "type": "text",
+          "required": true,
+          "localized": false,
+          "unique": true
+        },
+        "channel": "text",
+        "catalog_id": "text",
+        "note": "textarea",
+        "currency": "text",
+        "subtotal_minor": "number",
+        "total_minor": "number",
+        "payment_status": {
+          "type": "select",
+          "required": false,
+          "localized": false,
+          "options": [
+            "none",
+            "pending",
+            "captured",
+            "failed"
+          ],
+          "default": "none",
+          "unique": false
+        },
+        "items": "json"
+      },
+      "title_field": "reference_id",
+      "list": [
+        "payment_status",
+        "total_minor",
+        "currency"
+      ],
+      "pipeline": {
+        "stages": [
+          "pending",
+          "processing",
+          "shipped",
+          "completed",
+          "canceled"
+        ],
+        "initial": "pending",
+        "progression": "free",
+        "transitions": {
+          "pending": [
+            "processing",
+            "shipped",
+            "completed",
+            "canceled"
+          ],
+          "processing": [
+            "shipped",
+            "completed",
+            "canceled"
+          ],
+          "shipped": [
+            "completed"
+          ],
+          "completed": [],
+          "canceled": []
+        },
+        "terminal": [
+          "completed",
+          "canceled"
+        ]
+      },
+      "milestones": {},
+      "relations": {},
+      "dedupe_by": "reference_id"
+    },
+    "product": {
+      "label": {
+        "en": "Product",
+        "ar": "منتج"
+      },
+      "fields": {
+        "retailer_id": {
+          "type": "text",
+          "required": true,
+          "localized": false,
+          "unique": false
+        },
+        "name": {
+          "type": "text",
+          "required": true,
+          "localized": false,
+          "unique": false
+        },
+        "description": "textarea",
+        "price": "money",
+        "currency": "text",
+        "image_url": "text",
+        "additional_image_urls": "json",
+        "availability": {
+          "type": "text",
+          "required": false,
+          "localized": false,
+          "default": "in stock",
+          "unique": false
+        },
+        "condition": {
+          "type": "text",
+          "required": false,
+          "localized": false,
+          "default": "new",
+          "unique": false
+        },
+        "brand": "text",
+        "url": "text",
+        "category": "text",
+        "item_group_id": "text",
+        "variant_attrs": "json",
+        "quantity": "number",
+        "source": {
+          "type": "text",
+          "required": false,
+          "localized": false,
+          "default": "native",
+          "unique": false
+        },
+        "external_id": "text",
+        "meta_product_id": "text",
+        "sync_status": {
+          "type": "select",
+          "required": false,
+          "localized": false,
+          "options": [
+            "pending",
+            "synced",
+            "failed"
+          ],
+          "default": "pending",
+          "unique": false
+        },
+        "review_status": {
+          "type": "select",
+          "required": false,
+          "localized": false,
+          "options": [
+            "pending",
+            "approved",
+            "rejected"
+          ],
+          "default": "pending",
+          "unique": false
+        },
+        "metadata": "json"
+      },
+      "title_field": "name",
+      "list": [
+        "price",
+        "availability",
+        "brand"
+      ],
+      "milestones": {},
+      "relations": {},
+      "dedupe_by": "retailer_id",
+      "search": {
+        "text": [
+          "name",
+          "description",
+          "brand",
+          "category"
+        ],
+        "semantic": [
+          "name",
+          "description"
+        ]
+      }
+    },
+    "booking": {
+      "label": {
+        "en": "Booking",
+        "ar": "حجز"
+      },
+      "fields": {
+        "resource_id": {
+          "type": "text",
+          "required": true,
+          "localized": false,
+          "unique": false
+        },
+        "slot_start": {
+          "type": "text",
+          "required": true,
+          "localized": false,
+          "unique": false
+        },
+        "slot_end": "text",
+        "slot_minutes": "number",
+        "exclusive": "boolean"
+      },
+      "list": [
+        "slot_start"
+      ],
+      "pipeline": {
+        "stages": [
+          "requested",
+          "confirmed",
+          "checked_in",
+          "completed",
+          "cancelled",
+          "rescheduled",
+          "no_show"
+        ],
+        "initial": "confirmed",
+        "progression": "free",
+        "transitions": {
+          "requested": [
+            "confirmed",
+            "cancelled"
+          ],
+          "confirmed": [
+            "checked_in",
+            "cancelled",
+            "rescheduled",
+            "no_show"
+          ],
+          "checked_in": [
+            "completed",
+            "no_show"
+          ],
+          "completed": [],
+          "cancelled": [],
+          "rescheduled": [],
+          "no_show": []
+        },
+        "terminal": [
+          "completed",
+          "cancelled",
+          "no_show"
+        ]
+      },
+      "milestones": {},
+      "relations": {},
+      "constraints": {
+        "unique": [
+          {
+            "fields": [
+              "resource_id",
+              "slot_start"
+            ],
+            "where": {
+              "all": [
+                {
+                  "field": "exclusive",
+                  "op": "eq",
+                  "value": true
+                },
+                {
+                  "stage_in": [
+                    "requested",
+                    "confirmed",
+                    "checked_in"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "case": {
+      "label": {
+        "en": "Case",
+        "ar": "حالة"
+      },
+      "fields": {
+        "case_type": {
+          "type": "text",
+          "required": true,
+          "localized": false,
+          "unique": false
+        },
+        "priority": {
+          "type": "select",
+          "required": false,
+          "localized": false,
+          "options": [
+            "low",
+            "normal",
+            "high",
+            "urgent"
+          ],
+          "default": "normal",
+          "unique": false
+        },
+        "conversation_id": "text",
+        "resume_token": "text",
+        "data": "json"
+      },
+      "list": [
+        "case_type",
+        "priority"
+      ],
+      "pipeline": {
+        "stages": [
+          "open",
+          "in_progress",
+          "awaiting_customer",
+          "resolved",
+          "closed",
+          "reopened"
+        ],
+        "initial": "open",
+        "progression": "free",
+        "transitions": {
+          "open": [
+            "in_progress",
+            "awaiting_customer",
+            "resolved",
+            "closed"
+          ],
+          "in_progress": [
+            "awaiting_customer",
+            "resolved",
+            "closed"
+          ],
+          "awaiting_customer": [
+            "in_progress",
+            "resolved",
+            "closed"
+          ],
+          "resolved": [
+            "closed",
+            "reopened"
+          ],
+          "closed": [
+            "reopened"
+          ],
+          "reopened": [
+            "in_progress",
+            "awaiting_customer",
+            "resolved",
+            "closed"
+          ]
+        },
+        "terminal": [
+          "resolved",
+          "closed"
+        ]
+      },
+      "milestones": {},
+      "relations": {}
+    },
+    "cart": {
+      "label": {
+        "en": "Cart",
+        "ar": "سلة"
+      },
+      "fields": {
+        "channel": "text",
+        "items": {
+          "type": "line_items",
+          "required": false,
+          "localized": false,
+          "rolls_up_to": "total",
+          "unique": false
+        },
+        "total": "money",
+        "currency": "text",
+        "catalog_id": "text"
+      },
+      "list": [
+        "total",
+        "currency"
+      ],
+      "pipeline": {
+        "stages": [
+          "open",
+          "submitted",
+          "abandoned"
+        ],
+        "initial": "open",
+        "progression": "free",
+        "transitions": {
+          "open": [
+            "submitted",
+            "abandoned"
+          ],
+          "submitted": [],
+          "abandoned": []
+        },
+        "terminal": [
+          "submitted",
+          "abandoned"
+        ],
+        "auto_transition": {
+          "from": "open",
+          "to": "abandoned",
+          "after_idle_hours": 48
+        }
+      },
+      "milestones": {},
+      "relations": {}
+    },
+    "campaign": {
+      "label": {
+        "en": "Campaign",
+        "ar": "حملة"
+      },
+      "fields": {
+        "name": {
+          "type": "text",
+          "required": true,
+          "localized": false,
+          "unique": false
+        },
+        "entity": "text",
+        "segment_key": "text",
+        "message": "textarea",
+        "channel": {
+          "type": "text",
+          "required": false,
+          "localized": false,
+          "default": "web",
+          "unique": false
+        },
+        "scheduled_at": "text",
+        "config": "json"
+      },
+      "list": [
+        "entity",
+        "channel"
+      ],
+      "pipeline": {
+        "stages": [
+          "draft",
+          "scheduled",
+          "sending",
+          "sent",
+          "paused",
+          "failed",
+          "cancelled"
+        ],
+        "initial": "draft",
+        "progression": "free",
+        "transitions": {
+          "draft": [
+            "scheduled",
+            "sending",
+            "cancelled"
+          ],
+          "scheduled": [
+            "sending",
+            "cancelled"
+          ],
+          "sending": [
+            "sent",
+            "paused",
+            "failed"
+          ],
+          "paused": [
+            "sending",
+            "cancelled"
+          ],
+          "sent": [],
+          "failed": [
+            "sending"
+          ],
+          "cancelled": []
+        },
+        "terminal": [
+          "sent",
+          "cancelled"
+        ]
+      },
+      "milestones": {},
+      "relations": {}
+    },
+    "survey_response": {
+      "label": {
+        "en": "Survey response",
+        "ar": "رد استبيان"
+      },
+      "fields": {
+        "survey_key": {
+          "type": "text",
+          "required": true,
+          "localized": false,
+          "unique": false
+        },
+        "subject_ref": "text",
+        "answers": "json",
+        "score": "number"
+      },
+      "list": [
+        "survey_key",
+        "score"
+      ],
+      "milestones": {},
+      "relations": {}
+    }
+  }
+}

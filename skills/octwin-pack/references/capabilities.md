@@ -18,6 +18,9 @@ Each holds **markdown docs** (read these first) + **JSON catalogs** (open for pr
 | `dsl.md` | The flow YAML DSL — op-keys, expression language, output ports, top-level flow shape. |
 | `flow-dsl-schema.md` | Canonical flow-runtime schema reference (prose) for authoring agents. |
 | `flow-schema.json` | Machine schema for every node op-key + the full `render_intent` enum. |
+| `declarations.json` | **JSON Schemas for the files you WRITE** to enable modules — `manifest.yaml`, `xrm.yaml`, `worklist.yaml` (casework), `scheduling.yaml`, plus surveys/automation/roles/journey/taps/commands/messages. The authoritative shape of each declaration. |
+| `system-entities.json` | The platform's **built-in XRM entities** every pack gets free (`product`/`cart`/`order`/`case`/`booking`/…) — fields + pipelines. Compose flows over them, or `extends: system` in `xrm.yaml`. |
+| `manifest-authoring.md` · `xrm-guide.md` · `scheduling-guide.md` · `commerce-guide.md` · `casework-guide.md` | Prose authoring guides for the manifest + first-class modules (the companion to the `declarations` / `system-entities` catalogs). |
 | `primitives-guide.md` · `primitives.json` | Platform built-in `do:` primitives (`record_*`, `case_*`, `notify`, media, …) — readable guide + precise input/output-port JSON Schemas. |
 | `builtins.json` | Expression-language builtins (`$coalesce`, `$map`, `$lines`, `$format_number`, …) usable in any `$expr`. |
 | `templates-guide.md` · `templates.json` | Load-time `use:` subflow templates. |

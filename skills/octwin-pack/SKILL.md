@@ -38,8 +38,10 @@ pack.json                           # deploy target (platform_url, tenant, proje
 ## Step 0.5 — The capability reference is the source of truth (not this skill's prose)
 
 The exhaustive list of what the platform supports — every built-in `do:` primitive, every expression
-builtin (`$…`), every `render_intent`, the full flow-DSL schema, and the contract docs — is **not** in
-this skill. It lives in the **platform KB**, which ships with this skill and can be refreshed live:
+builtin (`$…`), every `render_intent`, the full flow-DSL schema, **the declaration schemas for what you
+write** (`manifest.yaml`, `xrm.yaml`, `worklist.yaml`/casework, `scheduling.yaml`, …), **the platform's
+built-in system entities** (`product`/`cart`/`order`/`case`/`booking`), and the module authoring docs —
+is **not** in this skill. It lives in the **platform KB**, which ships with this skill and can be refreshed live:
 
 - **Bundled snapshot** (always available, offline): [`references/platform-kb/`](references/platform-kb/) —
   markdown docs (`primitives-guide.md`, `dsl.md`, `runtime.md`, …) + `*.json` catalogs.
@@ -61,7 +63,7 @@ Decisions to make, each with its contract (details in the references):
 Declares the pack: `id`, `version` (a **string**, e.g. `'1.0.0'`), `description`, `supported_channels`,
 `required_adapters` (a bot with no data of its own needs only `[messaging]`), `default_settings.locale`,
 `flows`, and one or more `agents`. Optional record modules are declared by a **sibling file** next to
-the manifest — `xrm.yaml` (records with stage pipelines) / `cases.yaml` (support tickets). Full shape:
+the manifest — `xrm.yaml` (records with stage pipelines) / `worklist.yaml` (support tickets / casework). Full shape:
 [references/manifest.md](references/manifest.md).
 
 ### Flows (`flows/tools/<flow>.flow.yaml` + `<flow>.locale.<lang>.yaml`)
@@ -82,7 +84,7 @@ The node set, the expression grammar (`$t`, `$coalesce`, `$length`, …), ports,
 
 ### Where the data lives — use a first-class module, not a database
 Most packs need **no database**. Declare an `xrm.yaml` (records with pipelines — a lead, a booking,
-a catalog of models) or `cases.yaml` (support tickets) and the platform gives you storage + the
+a catalog of models) or `worklist.yaml` (support tickets / casework) and the platform gives you storage + the
 `record_*` / `case_*` built-ins for free. This is also how you **seed demo data** (with optional
 AI-generated images). See [references/data-and-render.md](references/data-and-render.md).
 

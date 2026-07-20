@@ -72,6 +72,41 @@
       "shape": "doc"
     },
     {
+      "key": "manifest-authoring",
+      "title": "Pack authoring (manifest)",
+      "summary": "How a pack is declared — the manifest + the pack-root file surface (xrm.yaml, worklist.yaml, roles.yaml, …).",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "xrm-guide",
+      "title": "XRM records",
+      "summary": "Authoring guide for xrm.yaml — entity types, typed fields, stage pipelines, to-many relations, saved segments, demo seed.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "scheduling-guide",
+      "title": "Scheduling",
+      "summary": "Authoring guide for scheduling.yaml — which XRM entities are bookable, slot defaults, reminder offsets.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "commerce-guide",
+      "title": "Commerce",
+      "summary": "Catalog / cart / order composition over the platform system entities (product/cart/order); commerce_catalog_seed.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "casework-guide",
+      "title": "Casework",
+      "summary": "Casework as a preset over the worklist engine — declared in the pack worklist.yaml work.case block (no cases.yaml).",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
       "key": "builtins",
       "title": "Expression builtins",
       "summary": "Expression-language builtins ($lines, $map, $shape, …) usable in any flow expression.",
@@ -112,6 +147,20 @@
       "summary": "Flow YAML JSON Schema — envelope + every node op-key under definitions.FlowNode.",
       "kind": "catalog",
       "shape": "schema"
+    },
+    {
+      "key": "declarations",
+      "title": "Declaration schemas",
+      "summary": "JSON Schemas for the files an author writes to enable first-class modules — manifest.yaml, xrm.yaml, worklist.yaml (casework), scheduling.yaml, surveys/automation/roles/journey/taps/commands/messages.",
+      "kind": "catalog",
+      "shape": "list"
+    },
+    {
+      "key": "system-entities",
+      "title": "System entities",
+      "summary": "The platform built-in XRM entities every pack has for free (product/cart/order/case/booking/survey_response/campaign) — typed fields + stage pipelines.",
+      "kind": "catalog",
+      "shape": "list"
     }
   ]
 }

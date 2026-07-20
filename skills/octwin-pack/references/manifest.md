@@ -53,7 +53,7 @@ the storage, a console surface, and built-in flow steps — no migrations, no DB
 | File | For | Built-in flow steps it unlocks |
 |---|---|---|
 | `xrm.yaml` | **records with a lifecycle** — a lead, a booking, an application, or a reference catalog (products/models) | `record_save`, `record_get`, `record_list`, `record_search`, `record_stage`, `record_note`, `task_open`, `task_complete`, `task_list` |
-| `cases.yaml` | **support tickets** — a problem to resolve, queue-routed and disposition-closed | `case_open`, `case_get`, `case_list`, `case_reply`, `case_transition` |
+| `worklist.yaml` | **support tickets / casework** — queues + work-item types (routing, SLA, dispositions); the built-in `case` type gets a casework preset (there is no `cases.yaml`) | `case_open`, `case_get`, `case_list`, `case_reply`, `case_transition` |
 
 `xrm.yaml` also carries a **`demo:`** block that seeds reference/demo records at deploy time (with
 `octwin deploy --seed`), and a field can be `'generate:<image prompt>'` to attach an AI-generated
@@ -64,4 +64,6 @@ carousel patterns: [data-and-render.md](data-and-render.md).
 
 These mean executable code or a private capability and are **rejected on deploy** (pure-YAML only):
 `.ts`/`.js` files, `routes/`, `db/client.*`, and `*.primitives.*`. Model logic with built-in flow
-steps + the expression grammar, and model data with `xrm.yaml` / `cases.yaml`.
+steps + the expression grammar, and model data with `xrm.yaml` / `worklist.yaml`. The authoritative
+schemas for every declaration file (manifest, xrm, worklist, scheduling, …) are the `declarations`
+catalog in the platform KB (see Step 0.5), and the platform's built-in entities are in `system-entities`.
