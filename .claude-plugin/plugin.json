@@ -1,7 +1,7 @@
 {
   "name": "octwin-pack",
   "description": "Author pure-YAML Octwin packs (WhatsApp/web conversational bots) and deploy them with octwin-cli — for Claude Code. By CEQUENS.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": { "name": "CEQUENS" },
   "homepage": "https://www.npmjs.com/package/octwin-cli",
   "keywords": ["octwin", "cequens", "pack", "whatsapp", "conversational-ai", "yaml"]
