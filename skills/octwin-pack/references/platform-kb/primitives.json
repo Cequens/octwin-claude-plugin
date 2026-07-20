@@ -169,7 +169,7 @@
     },
     {
       "name": "booking_reserve",
-      "describe": "Reserve a slot on a resource (an XRM record) — claims capacity race-free + writes the `booking` record. `fields` carries the pack's extended booking fields; `contact_id` defaults to the conversation contact. Returns reminders[].send_at for schedule_notify. Ports: ok · full · invalid_slot · failed.",
+      "describe": "Reserve a slot on a resource (an XRM record) — claims capacity race-free + writes the `booking` record. `fields` carries the pack's extended booking fields; `contact_id` defaults to the conversation contact. `ok` = { record_id, record_number, slot_start, reminders: [{ key, send_at }] } — pass reminders[].send_at to schedule_notify; `full` / `invalid_slot` carry an empty {}. Ports: ok · full · invalid_slot · failed.",
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -746,7 +746,7 @@
     },
     {
       "name": "case_list",
-      "describe": "List the current contact's support cases (optionally filtered by status). Ports: ok (rows) · empty · failed.",
+      "describe": "List the current contact's support cases (optionally filtered by status). `ok` = an ARRAY of rows { id, case_number, type, status, priority, sla_due_at, created_at, updated_at, decision, decision_action, decision_params } (timestamps ISO strings; the decision* fields are null until a disposition is recorded); `empty` = []. Ports: ok · empty · failed.",
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -2422,7 +2422,7 @@
     },
     {
       "name": "record_list",
-      "describe": "List XRM records as a page envelope { rows, total, offset, limit, has_more, next_offset, refs? }. Pass a declared `segment` (project-wide), or an `entity` (scoped to the current contact unless `all: true` / `contact_id`). Optional inline `where:` AST, `stage`, `sort_by: { field, dir }` (field-value ordering), `offset`, `limit`, `expand: [ref_field, …]`. Ports: ok · empty (rows: []) · failed.",
+      "describe": "List XRM records as a page envelope { rows, total, offset, limit, has_more, next_offset, refs? } — each row is { id, record_number, title, subtitle, stage, fields, updated_at } (read your declared field values off `row.fields.<name>`). Pass a declared `segment` (project-wide), or an `entity` (scoped to the current contact unless `all: true` / `contact_id`). Optional inline `where:` AST, `stage`, `sort_by: { field, dir }` (field-value ordering), `offset`, `limit`, `expand: [ref_field, …]`. Ports: ok · empty (rows: []) · failed.",
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
@@ -3216,7 +3216,7 @@
     },
     {
       "name": "slot_list",
-      "describe": "Free future bookable slots for a resource (an XRM record) over a date window. Returns structured rows { slot_start, slot_end, slot_minutes, remaining, capacity, dow, local_date, local_time, meta } — `meta` is the rule's opaque bag (e.g. a per-day branch); compose the label pack-side. Ports: ok · empty · failed.",
+      "describe": "Free future bookable slots for a resource (an XRM record) over a date window. `ok` is a BARE ARRAY of rows (no wrapper — bind it and iterate directly), each row { slot_start, slot_end, slot_minutes, remaining, capacity, dow, local_date, local_time, meta }; `empty` is []. `meta` is the rule's opaque bag (e.g. a per-day branch); compose the label pack-side. Ports: ok · empty · failed.",
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",

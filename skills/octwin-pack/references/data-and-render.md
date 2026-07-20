@@ -35,6 +35,16 @@ demo:
       photo: 'generate:A studio product photo of a silver electric SUV, white background, high detail.'
 ```
 
+**How `--seed` behaves** (so a re-deploy doesn't surprise you):
+
+- Runs on **every** `octwin deploy --seed` (not just the first), and is **idempotent** — each demo record is
+  UPSERTED, matched on the entity's `dedupe_by` if declared, else a non-localized title, else the canonical
+  title. So re-seeding updates in place; it doesn't duplicate.
+- **Media is reused, not regenerated.** Once a `generate:`/`asset:` field has resolved to a stored ref, a later
+  `--seed` keeps it (no fresh generation, no orphaned media). To force new images, clear the field / re-provision.
+- **Localized title fields are fine** — the match keys on the canonical value, so a bilingual `name` seeds cleanly.
+- A `scheduling.yaml` `demo.availability` block seeds alongside the `xrm.yaml` `demo:` records under the same flag.
+
 ## `record_list` — listing records for a flow
 
 `record_list` returns a **page**: `{ rows, total, offset, limit, has_more, next_offset }`. Bind it with
@@ -70,7 +80,7 @@ steps:
         items: '$page.rows'
         item_template:
           image_url: '$coalesce($item.fields.photo, "")'   # a photo ref resolves to an image URL
-          body:      '$lines($compact([$item.title, ("From " + $format_number($item.fields.price))]), "\n")'
+          body:      '$lines($compact([$item.title, ("From " + $format_money_field($item.fields.price, "EGP"))]), "\n")'
           buttons:
             - { title: '{$t("browse.book")}', on_select: { invoke: book, with: { model_code: '$item.fields.code' } } }
       memory_note: 'Showed the lineup ({$page.total} items).'
@@ -81,7 +91,10 @@ steps:
 ```
 
 - `image_url:` takes the record's image field directly — the renderer turns a stored image reference
-  into a URL, and a row with no photo just renders as text.
+  (a `MEDIA-…` ref **or** a raw asset UUID) into a URL, and a row with no photo just renders as text.
+- A **`money` field** is stored as a `{ value, offset }` bag (real amount = `value / offset`), NOT a plain
+  number. Render it with **`$format_money_field($item.fields.price, "EGP")`** — passing the bag to
+  `$format_number` / `$format_money` (which expect a plain number) renders **blank**.
 - A row `buttons[].on_select: { invoke: <flow>, with: { … } }` routes a tap straight to another flow.
 - **Never** `.slice()` the rows to a channel cap or read "how many rows fit" — the renderer clamps and
   pages per channel. Return everything + one render intent.

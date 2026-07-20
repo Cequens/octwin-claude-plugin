@@ -9,7 +9,7 @@
 | [`analyze_image`](#analyze_image) | Analyze image(s) with a vision model via the platform Inference adapter. `image` is a URL or data URL; pass `images: [{image, mime_type}]` to analyze a batch in ONE call. `json: true` parses the output. Returns `{ text, json? }` on `ok`. |
 | [`booking_cancel`](#booking_cancel) | Cancel a booking (XRM record): stage → cancelled + release the slot seat. Ports: ok · not_cancellable · failed. |
 | [`booking_reschedule`](#booking_reschedule) | Move a booking (XRM record) to a new slot: claim the new seat, patch the record, release the old. Returns fresh reminders[].send_at. Ports: ok · full · invalid_slot · failed. |
-| [`booking_reserve`](#booking_reserve) | Reserve a slot on a resource (an XRM record) — claims capacity race-free + writes the `booking` record. `fields` carries the pack's extended booking fields; `contact_id` defaults to the conversation contact. Returns reminders[].send_at for schedule_notify. Ports: ok · full · invalid_slot · failed. |
+| [`booking_reserve`](#booking_reserve) | Reserve a slot on a resource (an XRM record) — claims capacity race-free + writes the `booking` record. `fields` carries the pack's extended booking fields; `contact_id` defaults to the conversation contact. `ok` = { record_id, record_number, slot_start, reminders: [{ key, send_at }] } — pass reminders[].send_at to schedule_notify; `full` / `invalid_slot` carry an empty {}. Ports: ok · full · invalid_slot · failed. |
 | [`campaign_create`](#campaign_create) | Create an outreach campaign (a `campaign` record at draft) over an entity segment / where-filter. Returns { campaign_id }; send with campaign_send. Ports: ok · failed. |
 | [`campaign_send`](#campaign_send) | Send a campaign by id: resolve its audience + fan out one delivery per matched contact (via reminders), advancing it to `sent`. Returns { matched, enqueued, truncated, stage }. Ports: ok · failed. |
 | [`cancel_scheduled`](#cancel_scheduled) | Cancel all pending scheduled messages for a `dedupe_key` (the handle passed to a prior schedule_notify). Returns how many were cancelled. |
@@ -21,7 +21,7 @@
 | [`cart_view`](#cart_view) | Return the contact's open cart: line items + precomputed subtotal/totals. The CartView carries an `empty` flag. Ports: ok (CartView) · failed. |
 | [`case_attach`](#case_attach) | Attach an uploaded media asset (a MEDIA- ref) to a case: link it (surfaces in the case's Attachments) and record it on the timeline. Use after case_open/case_reply when the customer sent evidence. Ports: ok ({ case_id, media_ref }) · failed. |
 | [`case_get`](#case_get) | Fetch one case + its timeline by id. Ports: ok ({ case, events }) · empty (not found) · failed. |
-| [`case_list`](#case_list) | List the current contact's support cases (optionally filtered by status). Ports: ok (rows) · empty · failed. |
+| [`case_list`](#case_list) | List the current contact's support cases (optionally filtered by status). `ok` = an ARRAY of rows { id, case_number, type, status, priority, sla_due_at, created_at, updated_at, decision, decision_action, decision_params } (timestamps ISO strings; the decision* fields are null until a disposition is recorded); `empty` = []. Ports: ok · empty · failed. |
 | [`case_open`](#case_open) | Open a support case from this conversation. `type` must be a declared case type; `fields` is the collected data bag. Queue + priority + SLA come from the pack's case-type declaration. Ports: ok ({ case_id, case_number, sla_hours, sla_due_at }) · failed. Use `case_number` (a per-project ticket number) + `sla_hours` to confirm the ticket to the customer. |
 | [`case_reply`](#case_reply) | Record the customer's reply into their case: append it to the timeline (the 2nd-line team sees it) and, if the case was awaiting the customer, move it back to in_progress. Use this whenever the customer supplies information a case asked for. Ports: ok ({ case_id, status }) · failed. |
 | [`case_transition`](#case_transition) | Move a case to a new status (workflow-validated). Ports: ok ({ status }) · failed (illegal transition / not found). |
@@ -48,7 +48,7 @@
 | [`record_get`](#record_get) | Fetch one XRM record by `record_id`, or by `entity` + `match: { field?, value }` (field defaults to the entity's `dedupe_by`). `expand: [ref_field, ref_field.ref_field]` resolves record/contact ref fields into a `refs` map. Ports: ok (record + refs?) · not_found · failed. |
 | [`record_group`](#record_group) | Group an entity's records by one dimension (`by`: a scalar field or 'stage') with per-group metrics: count (always) + named `metrics` ({ op: sum|avg|min|max|distinct_count|only, field }). Optional `where:` AST, `contact_id`, `sort: { by: count|key|<metric>, dir }`, `limit`, `expand_refs` (resolve record/contact keys + only-values into `refs`). Payload: { groups: [{ key, count, metrics }], refs? }. Ports: ok · empty · failed. |
 | [`record_link`](#record_link) | Add (or with `remove: true`, remove) a to-many link on a declared relation — exactly one of `to_record_id` / `to_contact_id`. Idempotent. Ports: ok ({ record_id, relation, changed }) · not_found · failed. |
-| [`record_list`](#record_list) | List XRM records as a page envelope { rows, total, offset, limit, has_more, next_offset, refs? }. Pass a declared `segment` (project-wide), or an `entity` (scoped to the current contact unless `all: true` / `contact_id`). Optional inline `where:` AST, `stage`, `sort_by: { field, dir }` (field-value ordering), `offset`, `limit`, `expand: [ref_field, …]`. Ports: ok · empty (rows: []) · failed. |
+| [`record_list`](#record_list) | List XRM records as a page envelope { rows, total, offset, limit, has_more, next_offset, refs? } — each row is { id, record_number, title, subtitle, stage, fields, updated_at } (read your declared field values off `row.fields.<name>`). Pass a declared `segment` (project-wide), or an `entity` (scoped to the current contact unless `all: true` / `contact_id`). Optional inline `where:` AST, `stage`, `sort_by: { field, dir }` (field-value ordering), `offset`, `limit`, `expand: [ref_field, …]`. Ports: ok · empty (rows: []) · failed. |
 | [`record_note`](#record_note) | Append a note to an XRM record's timeline. Ports: ok ({ record_id }) · not_found · failed. |
 | [`record_notify`](#record_notify) | Relay a message to a record's linked contact (via notify) and log a customer-visible message_out timeline event with delivery status — written even on failure. Ports: ok ({ notified, failure_reason? }) · failed. |
 | [`record_related`](#record_related) | Records most similar to `record_id` by semantic embedding ("also viewed" / related items). The entity must declare `search.semantic` in xrm.yaml. Project-wide by default; pass `contact_id` to scope, `where:` to facet, `limit`, `expand: [ref_field, …]`. Payload: { rows (ranked, w/ score), refs? }. Ports: ok · empty (rows: []) · failed. |
@@ -59,7 +59,7 @@
 | [`schedule_notify`](#schedule_notify) | Schedule a notify for later delivery (deliver `intent` to a contact at `send_at`). Use `dedupe_key` for idempotency + as a handle to later `cancel_scheduled`. The intent (incl. any button taps) is delivered verbatim. |
 | [`send_message`](#send_message) | Send a text or rendered intent to the active channel mid-flow. Distinct from `render:` (which emits ONE response per step) — use `send_message` when a step needs to emit multiple messages, e.g. progress updates. |
 | [`set_media_metadata`](#set_media_metadata) | Merge a JSONB patch into a media asset's `metadata` column. Used by pack media-handler flows to attach analysis results (vision output, OCR text, …) to the asset record. Top-level keys replace wholesale (jsonb || semantics). |
-| [`slot_list`](#slot_list) | Free future bookable slots for a resource (an XRM record) over a date window. Returns structured rows { slot_start, slot_end, slot_minutes, remaining, capacity, dow, local_date, local_time, meta } — `meta` is the rule's opaque bag (e.g. a per-day branch); compose the label pack-side. Ports: ok · empty · failed. |
+| [`slot_list`](#slot_list) | Free future bookable slots for a resource (an XRM record) over a date window. `ok` is a BARE ARRAY of rows (no wrapper — bind it and iterate directly), each row { slot_start, slot_end, slot_minutes, remaining, capacity, dow, local_date, local_time, meta }; `empty` is []. `meta` is the rule's opaque bag (e.g. a per-day branch); compose the label pack-side. Ports: ok · empty · failed. |
 | [`storage_remove`](#storage_remove) | Delete bucket/path from the pack install bucket. |
 | [`survey_submit`](#survey_submit) | Record a survey response: validate `answers` against the declared `survey`, write a survey_response XRM record (upsert on `subject_ref`), compute the score. `contact_id` defaults to the conversation contact. Ports: ok ({ record_id, score }) · failed. |
 | [`task_complete`](#task_complete) | Close an open XRM task as done (default) or cancelled. Ports: ok ({ task_id, status }) · not_found (unknown / already closed) · failed. |
@@ -190,7 +190,7 @@ Move a booking (XRM record) to a new slot: claim the new seat, patch the record,
 
 ## `booking_reserve`
 
-Reserve a slot on a resource (an XRM record) — claims capacity race-free + writes the `booking` record. `fields` carries the pack's extended booking fields; `contact_id` defaults to the conversation contact. Returns reminders[].send_at for schedule_notify. Ports: ok · full · invalid_slot · failed.
+Reserve a slot on a resource (an XRM record) — claims capacity race-free + writes the `booking` record. `fields` carries the pack's extended booking fields; `contact_id` defaults to the conversation contact. `ok` = { record_id, record_number, slot_start, reminders: [{ key, send_at }] } — pass reminders[].send_at to schedule_notify; `full` / `invalid_slot` carry an empty {}. Ports: ok · full · invalid_slot · failed.
 
 ### Inputs
 
@@ -576,7 +576,7 @@ Fetch one case + its timeline by id. Ports: ok ({ case, events }) · empty (not 
 
 ## `case_list`
 
-List the current contact's support cases (optionally filtered by status). Ports: ok (rows) · empty · failed.
+List the current contact's support cases (optionally filtered by status). `ok` = an ARRAY of rows { id, case_number, type, status, priority, sla_due_at, created_at, updated_at, decision, decision_action, decision_params } (timestamps ISO strings; the decision* fields are null until a disposition is recorded); `empty` = []. Ports: ok · empty · failed.
 
 ### Inputs
 
@@ -1513,7 +1513,7 @@ _(empty object — primitive takes/returns `{}`)_
 
 ## `record_list`
 
-List XRM records as a page envelope { rows, total, offset, limit, has_more, next_offset, refs? }. Pass a declared `segment` (project-wide), or an `entity` (scoped to the current contact unless `all: true` / `contact_id`). Optional inline `where:` AST, `stage`, `sort_by: { field, dir }` (field-value ordering), `offset`, `limit`, `expand: [ref_field, …]`. Ports: ok · empty (rows: []) · failed.
+List XRM records as a page envelope { rows, total, offset, limit, has_more, next_offset, refs? } — each row is { id, record_number, title, subtitle, stage, fields, updated_at } (read your declared field values off `row.fields.<name>`). Pass a declared `segment` (project-wide), or an `entity` (scoped to the current contact unless `all: true` / `contact_id`). Optional inline `where:` AST, `stage`, `sort_by: { field, dir }` (field-value ordering), `offset`, `limit`, `expand: [ref_field, …]`. Ports: ok · empty (rows: []) · failed.
 
 ### Inputs
 
@@ -1910,7 +1910,7 @@ _(empty object — primitive takes/returns `{}`)_
 
 ## `slot_list`
 
-Free future bookable slots for a resource (an XRM record) over a date window. Returns structured rows { slot_start, slot_end, slot_minutes, remaining, capacity, dow, local_date, local_time, meta } — `meta` is the rule's opaque bag (e.g. a per-day branch); compose the label pack-side. Ports: ok · empty · failed.
+Free future bookable slots for a resource (an XRM record) over a date window. `ok` is a BARE ARRAY of rows (no wrapper — bind it and iterate directly), each row { slot_start, slot_end, slot_minutes, remaining, capacity, dow, local_date, local_time, meta }; `empty` is []. `meta` is the rule's opaque bag (e.g. a per-day branch); compose the label pack-side. Ports: ok · empty · failed.
 
 ### Inputs
 

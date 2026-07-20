@@ -245,7 +245,7 @@ The flow-render pipeline accepts MEDIA-refs in any URL-bearing field. Two integr
 - [`ChannelBridge.renderHint`](../src/platform/channels/bridge.ts) walks the resolved UiHint via [`expandMediaRefs`](../src/platform/media/expand-refs.ts) and rewrites refs in-place before dispatching to the channel impl.
 - [`WhatsAppMessagingAdapter.sendIntent`](../src/platform/channels/whatsapp/messaging.ts) does the same after `renderIntent` + `compileOnSelectsInTree`.
 
-Fields scanned (allowlisted by key name): `image_url`, `url`, `image`, `header_image_url`, `thumbnail_url`. Refs that fail to resolve are logged + left as-is; the renderer's existing `caps.image.is_renderable` check downstream substitutes the intent's `placeholder_url`.
+Fields scanned (allowlisted by key name): `image_url`, `url`, `image`, `header_image_url`, `thumbnail_url`, `document_url`. A ref is either a `MEDIA-`/`VOICENOTE-` ref **or** a raw media asset UUID — both resolve (so a carousel `item_template.image_url` fed a record's stored image field, ref or UUID, works). Refs that fail to resolve are logged + left as-is; the renderer's existing `caps.image.is_renderable` check downstream substitutes the intent's `placeholder_url`.
 
 Cards with mixed values (some URLs, some refs) work fine — only fields matching `MEDIA-XXXXXXXX` are rewritten.
 

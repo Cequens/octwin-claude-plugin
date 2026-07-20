@@ -70,6 +70,22 @@ Values in `args:` / `assign:` / `render:` are expressions. A string containing `
   `$lines(list, sep)`, `$compact(list)` (drop empties), `$format_number(n)`, `$enum_label(field, v)`.
 - **No method calls.** `$arr.length` / `$arr.join()` are invalid — use `$length($arr)` /
   `$lines($arr, ", ")`. Only top-level function calls and `.field` access are allowed.
+- **Money fields** are stored as `{ value, offset }` (amount = `value/offset`) — render with
+  `$format_money_field($item.fields.price, "EGP")`, NOT `$format_number` (which blanks the bag).
+
+## Context available in every flow
+
+Read ambient data through these namespaces (the full contract is in the platform KB — `runtime.md`):
+
+- `$input.*` — the tool's input fields (your flow's `input:` schema) + a resumed tap's `with:` payload.
+- `$state.*` — the `collect:` accumulator and anything you `assign`.
+- `$contact.*` — the resolved contact: `$contact.id`, `$contact.channel`, `$contact.channel_contact_handle`,
+  `$contact.display_name`, `$contact.language`, and namespaced `$contact.metadata.<ns>.<field>` (e.g. a
+  pack-user id). Unbound (absent) before the contact exists — e.g. in a pre-turn flow.
+- `$conversation.*` — the ambient fields declared in the manifest's `default_conversation_context`
+  (e.g. `$conversation.lang`).
+- `$config.*` — pack/flow `config:` values.
+- your `bind:` name — a `do:` step's data payload (e.g. `$page.rows`).
 
 ## Render intents (the UI)
 
@@ -103,3 +119,35 @@ main:
 
 To gather several fields (name, phone, date…), use a `collect:` node, not a hand-rolled loop: declare
 the fields with optional pickers, validation, and media-upload fields — the platform runs the back-and-forth.
+
+## Render a picker and wait for a tap (the portable way — no `collect` engine)
+
+For a **one-off** choice, render a picker and `pause:` for the tap. This is the portable alternative to
+the `collect: … options:` sugar (which also works) — a `render:` node whose rows carry `on_select`, then a
+`pause: { on_resume }` where the flow continues. The tap's `with:` payload is merged into `$input` on resume:
+
+```yaml
+  pick:
+    - do: slot_list
+      args: { resource_record_id: '$input.model_id' }
+      bind: slots
+      outputs: { ok: [{ goto: offer }], empty: [{ goto: none }], failed: [{ end: failed }] }
+  offer:
+    - render:
+        render_intent: list_picker
+        header: '{$t("book.pick_slot")}'
+        items:  '$slots'                       # slot_list `ok` is a bare array
+        item_template:
+          title: '{$item.local_date} {$item.local_time}'
+          on_select: { resume: '$self', with: { slot_start: '$item.slot_start' } }
+      memory_note: 'Offered slots.'
+    - pause: { on_resume: [{ goto: confirm }] }  # resumes HERE; $input.slot_start is now set
+  confirm:
+    - do: booking_reserve
+      args: { resource_record_id: '$input.model_id', slot_start: '$input.slot_start' }
+      outputs: { ok: [{ goto: done }], full: [{ goto: offer }], invalid_slot: [{ goto: offer }], failed: [{ end: failed }] }
+```
+
+`on_select` verbs: **`resume: '$self'`** (continue THIS flow after the `pause`), **`invoke: <flow>`** (route to
+another flow — no `pause` needed), `reply` / `agent` (hand back to the agent). Full contract: platform KB
+`dsl.md` §render / §pause.

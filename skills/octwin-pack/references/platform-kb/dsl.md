@@ -682,8 +682,9 @@ Source: [`expr/evaluator.ts`](../src/platform/flow-runtime/expr/evaluator.ts).
 
 | Form | Semantics |
 |---|---|
-| `'$expr'` (bare) | Full expression evaluation. Returns the typed value. |
-| `'{$expr}'` (interpolated) | Substitution within a string. Result is stringified. Works **uniformly** — at the top level of a render/assign/arg value AND inside an expression-position string literal (a `$lines([...])` element, a ternary branch, a `$map` value): `$lines(['🏠 {$ref} — {$loc}'])` and `$map($rows, { label: '→ {$item.name}' })` both interpolate per the current scope. Prefer it over `'…' + $x + '…'` concatenation. No escape for a literal `{$`. |
+| `'$expr'` (bare) | Full expression evaluation. Returns the typed value. First non-ws char is `$`. |
+| `'{$expr}'` (interpolated) | Substitution within a string. Result is stringified. Works **uniformly** — at the top level of a render/assign/arg value AND inside an expression-position string literal (a `$lines([...])` element, a ternary branch, a `$map` value): `$lines(['🏠 {$ref} — {$loc}'])` and `$map($rows, { label: '→ {$item.name}' })` both interpolate per the current scope. **Prefer it** over `'…' + $x + '…'` concatenation. No escape for a literal `{$`. |
+| `"'…' + $x"` (quote-leading) | Quoted-string-leading **concatenation** expression — first non-ws char is a quote (`'`/`"`), e.g. `"'📅 ' + $coalesce($item.date, '')"`. Evaluated as an expression, NOT literal text. Recognised identically in **render fields, `args:`, and `assign:`** (single-sourced in [`resolveScalarString`](../src/platform/flow-runtime/expr/evaluator.ts)). Prefer `{$…}` interpolation for readability; a literal `$` (currency `$500`) stays literal because it isn't quote-leading. |
 | `'t:key'` | Locale shorthand — same as `'{$t("key")}'` |
 
 ### Operators

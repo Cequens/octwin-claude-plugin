@@ -131,6 +131,20 @@ undeclared values fail) by `validateCaseworkLocaleCoverage`
 `picker-input-enum-mismatch` in `flow-runtime/lint`) keeps static pickers,
 `input:` enums, and the declared case types in lockstep.
 
+**The exact values to cover** (so `status.*` / `decision.*` are complete and no boot check fails) —
+copy these into your pack `locale.<lang>.yaml`:
+
+- **Status** — the `case` pipeline stages, and the only legal `case_transition` `to_status` targets
+  (`CASE_STATUS_TRANSITIONS`, [`../xrm/system/entities.ts`](../xrm/system/entities.ts)):
+  `open` · `in_progress` · `awaiting_customer` · `resolved` · `closed` · `reopened`.
+- **Priority** — the `case.priority` select: `low` · `normal` · `high` · `urgent`.
+- **Standard decisions** — merged into every case type (add customs under `work.case.types.<t>.actions`),
+  each with the stage it moves the case to ([`preset.ts`](preset.ts) `CASE_STANDARD_ACTIONS`):
+  `resolve` → `resolved` · `reject` → `resolved` · `request_more_info` → `awaiting_customer` · `escalate` → `in_progress`.
+
+So a pack needs `cases.<type>` (per declared type), `status.open … status.reopened` (all six), and
+`decision.resolve … decision.escalate` (+ any custom actions) in each language.
+
 Flow YAML can read the declared type ids without re-typing them via the
 runtime-bound **`$work_types(entity, route_by?)`** function (e.g. kaiian's region
 gate: `$in($state.issue_type, $work_types("case", "region"))`).

@@ -141,6 +141,17 @@
       "signature": "(value: unknown, currency: unknown, locale?: unknown): string"
     },
     {
+      "name": "format_money_field",
+      "category": "utility",
+      "summary": "Currency formatter for a STORED `money` field — the `{ value, offset }` bag an\nXRM `money` field always holds (real amount = `value / offset`, `offset`\nusually 100).",
+      "description": "Currency formatter for a STORED `money` field — the `{ value, offset }` bag an\nXRM `money` field always holds (real amount = `value / offset`, `offset`\nusually 100). `$format_money` takes a plain number; THIS takes the stored bag,\nso an author renders `record.fields.<money>` directly without dividing by hand\n(the common trap — passing the bag to `$format_number`/`$format_money` yields\na blank).\n  $format_money_field($item.fields.price, 'EGP')          → 'EGP 1,500,000'\n  $format_money_field($item.fields.price, 'USD', 'en-US') → '$1,500,000.00'\nAlso accepts a plain number (treated as the amount). Returns '' for anything\nthat is neither a finite number nor a `{ value, offset }` bag.",
+      "examples": [
+        "$format_money_field($item.fields.price, 'EGP')          → 'EGP 1,500,000'",
+        "$format_money_field($item.fields.price, 'USD', 'en-US') → '$1,500,000.00'"
+      ],
+      "signature": "(m: unknown, currency: unknown, locale?: unknown): string"
+    },
+    {
       "name": "format_relative_date",
       "category": "string",
       "summary": "Relative-time formatter.",
