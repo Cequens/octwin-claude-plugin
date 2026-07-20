@@ -8,7 +8,8 @@ plugin and your Claude Code gains the **`octwin-pack`** skill: it scaffolds a pa
 and data model, grounds itself on your platform's live capability reference, validates, and deploys to
 your tenant — all pure YAML, no TypeScript.
 
-> Companion CLI: [`octwin-cli`](https://www.npmjs.com/package/octwin-cli) (`npx octwin-cli`). The skill drives it.
+> Companion CLI: [`octwin-cli`](https://www.npmjs.com/package/octwin-cli) — install once with `npm i -g octwin-cli`
+> (or `npx octwin-cli@latest` to run without installing). The skill drives it.
 
 ## Install (Claude Code plugin)
 

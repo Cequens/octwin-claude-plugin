@@ -18,19 +18,32 @@ This skill takes you from nothing to a deployed, chattable pack. Two rules frame
 - **Scaffold, then customize.** Never hand-write pack boilerplate from memory — start from
   `octwin init` and edit. The scaffold is a real, valid, chattable hello-bot.
 
-## Step 0 — Scaffold + read what you got
+## Step 0 — Install the CLI, scaffold, read what you got
+
+Install the CLI **once** — a fast, stable `octwin` command that also nudges you when a newer version ships:
 
 ```bash
-npx octwin-cli@latest init ./my-pack --id my-pack --description "What the bot does"
+npm i -g octwin-cli        # install once; then use `octwin <cmd>` everywhere below
+octwin --version           # confirm it's on the current release
+# No-install fallback (CI, or can't install globally): npx octwin-cli@latest <cmd>
+```
+
+Scaffold a pack and read it:
+
+```bash
+octwin init ./my-pack --id my-pack --description "What the bot does"
 cd ./my-pack
 ```
 
-This writes a minimal, valid pack. **Read every file** before editing — the layout IS the contract:
+This writes a minimal, valid, chattable pack that already models the **home-hub** shape (Step 1). **Read every
+file** before editing — the layout IS the contract:
 
 ```
 manifest.yaml                       # the whole pack is declared here (id, agent, flows, channels)
-flows/tools/main.flow.yaml          # one agent-callable capability = one flow (the DSL)
-flows/tools/main.locale.ar.yaml     # every user-visible string, keyed (referenced via $t)
+flows/tools/home.flow.yaml          # the MENU HUB — your front door (a list_picker; see ux-patterns.md)
+flows/tools/home.locale.ar.yaml     # the hub's user-visible strings, keyed (referenced via $t)
+flows/tools/browse.flow.yaml        # an example tool the hub invokes — replace with your real capability
+flows/tools/browse.locale.ar.yaml   #   (+ its strings)
 prompts/identity.md                 # the agent's system prompt (who it is, when to call tools)
 pack.json                           # deploy target (platform_url, tenant, project) — not part of the pack
 ```
