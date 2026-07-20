@@ -1,0 +1,117 @@
+{
+  "version": "1.0",
+  "index": [
+    {
+      "key": "runtime",
+      "title": "Runtime",
+      "summary": "Flow kinds (tool/pre-turn/post-turn/media-handler) + the context namespaces they expose.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "dsl",
+      "title": "DSL reference",
+      "summary": "Flow YAML DSL — op-keys, expression language, output ports, top-level flow shape.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "taps",
+      "title": "Taps",
+      "summary": "Tap resolution — taps.yaml schema, match kinds, structured t:<verb>:<target>:<bindings> ids.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "notify",
+      "title": "Notify",
+      "summary": "Cross-user delivery via the notify primitive.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "media",
+      "title": "Media",
+      "summary": "Media pipeline — MEDIA- refs + inbound pre-processing (vision/voice) + handler flows.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "agent-protocol",
+      "title": "Agent protocol",
+      "summary": "The universal agent contract injected into every agent system prompt — tool envelope, instructions-precedence, workflow_run_id round-trip, observational markers.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "flow-dsl-schema",
+      "title": "Flow DSL schema",
+      "summary": "Canonical flow-runtime schema reference (prose + embedded JSON Schema) for authoring agents.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "primitives-guide",
+      "title": "Primitives (guide)",
+      "summary": "Readable reference for the platform builtin `do:` primitives — markdown companion to the primitives catalog JSON.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "channels-guide",
+      "title": "Channels (guide)",
+      "summary": "Readable reference for per-channel contact-metadata + inbound-ephemera field specs.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "templates-guide",
+      "title": "Templates (guide)",
+      "summary": "Readable reference for load-time `use:` subflow templates.",
+      "kind": "doc",
+      "shape": "doc"
+    },
+    {
+      "key": "builtins",
+      "title": "Expression builtins",
+      "summary": "Expression-language builtins ($lines, $map, $shape, …) usable in any flow expression.",
+      "kind": "catalog",
+      "shape": "list"
+    },
+    {
+      "key": "templates",
+      "title": "Templates",
+      "summary": "Load-time `use:` subflow templates (platform + pack-discovered).",
+      "kind": "catalog",
+      "shape": "list"
+    },
+    {
+      "key": "partials",
+      "title": "Partials",
+      "summary": "Render-time `$partial(name, …)` render-fragment generators.",
+      "kind": "catalog",
+      "shape": "list"
+    },
+    {
+      "key": "primitives",
+      "title": "Platform primitives",
+      "summary": "Platform builtin `do:` primitives — input + output-port JSON Schemas.",
+      "kind": "catalog",
+      "shape": "list"
+    },
+    {
+      "key": "channels",
+      "title": "Channels",
+      "summary": "Per-channel durable contact-metadata + per-message inbound-ephemera field specs.",
+      "kind": "catalog",
+      "shape": "list"
+    },
+    {
+      "key": "flow-schema",
+      "title": "Flow JSON Schema",
+      "summary": "Flow YAML JSON Schema — envelope + every node op-key under definitions.FlowNode.",
+      "kind": "catalog",
+      "shape": "schema"
+    }
+  ]
+}

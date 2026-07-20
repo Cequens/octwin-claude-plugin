@@ -1,0 +1,813 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Flow",
+  "version": "1.0",
+  "description": "JSON Schema for the DSL flow YAML shape. Generated from src/platform/flow-runtime/schemas/ Zod definitions. Node op-key shapes (do/if/branch/dispatch/collect/pause/render/end/assign/note/answer/goto/foreach/track) are enumerated under definitions.FlowNode (anyOf). Step/body values (steps.*, branch.then, collect.prompt, foreach.body, …) conform to FlowNode; deeply-nested node bodies render opaque here — see src/platform/flow-runtime/schemas/context.md + docs/13a-dsl-reference.md for the recursive shape. Consumers: AI pack-authoring SDK, editor LSPs, agentic validation loops. Phase 7 Pillar 3a.",
+  "$ref": "#/definitions/Flow",
+  "definitions": {
+    "Flow": {
+      "type": "object",
+      "properties": {
+        "flow_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$"
+        },
+        "version": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "description": {
+          "type": "string"
+        },
+        "internal": {
+          "type": "boolean"
+        },
+        "constants": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        },
+        "config": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "input": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "conversation_context": {
+          "default": {},
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        "require": {
+          "anyOf": [
+            {},
+            {
+              "type": "array",
+              "items": {}
+            }
+          ]
+        },
+        "entry": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "if": {
+                "type": "string",
+                "description": "Runtime expression — see flow-runtime expression DSL"
+              },
+              "else": {
+                "type": "boolean"
+              },
+              "goto": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "goto"
+            ]
+          }
+        },
+        "steps": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "anyOf": [
+              {},
+              {
+                "type": "array",
+                "items": {}
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "flow_id",
+        "version",
+        "entry",
+        "steps"
+      ],
+      "$defs": {
+        "__schema0": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "string",
+                "number",
+                "boolean",
+                "enum",
+                "array",
+                "object"
+              ]
+            },
+            "optional": {
+              "default": true,
+              "type": "boolean"
+            },
+            "nullable": {
+              "default": false,
+              "type": "boolean"
+            },
+            "positive": {
+              "default": false,
+              "type": "boolean"
+            },
+            "integer": {
+              "default": false,
+              "type": "boolean"
+            },
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "enum": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "items": {
+              "$ref": "#/$defs/__schema0"
+            },
+            "shape": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "$ref": "#/$defs/__schema0"
+              }
+            },
+            "describe": {
+              "type": "string"
+            },
+            "default": {}
+          },
+          "required": [
+            "type"
+          ]
+        }
+      }
+    },
+    "FlowNode": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "do": {
+              "type": "string"
+            },
+            "args": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            "bind": {
+              "type": "string"
+            },
+            "outputs": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "anyOf": [
+                  {},
+                  {
+                    "type": "array",
+                    "items": {}
+                  }
+                ]
+              }
+            },
+            "detach": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "do"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "if": {
+              "type": "string",
+              "description": "Runtime expression — see flow-runtime expression DSL"
+            },
+            "then": {
+              "anyOf": [
+                {},
+                {
+                  "type": "array",
+                  "items": {}
+                }
+              ]
+            },
+            "else": {
+              "anyOf": [
+                {},
+                {
+                  "type": "array",
+                  "items": {}
+                }
+              ]
+            },
+            "goto": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "if"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "branch": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "when": {
+                    "type": "string",
+                    "description": "Runtime expression — see flow-runtime expression DSL"
+                  },
+                  "default": {
+                    "type": "boolean"
+                  },
+                  "then": {
+                    "anyOf": [
+                      {},
+                      {
+                        "type": "array",
+                        "items": {}
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "then"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "branch"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "dispatch": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "Runtime expression — see flow-runtime expression DSL"
+                },
+                "cases": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "anyOf": [
+                      {},
+                      {
+                        "type": "array",
+                        "items": {}
+                      }
+                    ]
+                  }
+                },
+                "default": {
+                  "anyOf": [
+                    {},
+                    {
+                      "type": "array",
+                      "items": {}
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "key",
+                "cases"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "dispatch"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "collect": {
+              "type": "object",
+              "properties": {
+                "derive": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string",
+                    "description": "Runtime expression — see flow-runtime expression DSL"
+                  }
+                },
+                "before_each": {
+                  "anyOf": [
+                    {},
+                    {
+                      "type": "array",
+                      "items": {}
+                    }
+                  ]
+                },
+                "before_prompt": {
+                  "anyOf": [
+                    {},
+                    {
+                      "type": "array",
+                      "items": {}
+                    }
+                  ]
+                },
+                "fields": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "field": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "label": {
+                        "type": "string",
+                        "description": "Runtime expression — see flow-runtime expression DSL"
+                      },
+                      "describe": {
+                        "type": "string"
+                      },
+                      "when": {
+                        "type": "string",
+                        "description": "Runtime expression — see flow-runtime expression DSL"
+                      },
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "validate": {
+                        "type": "object",
+                        "properties": {
+                          "when": {
+                            "type": "string",
+                            "description": "Runtime expression — see flow-runtime expression DSL"
+                          },
+                          "error": {
+                            "type": "string",
+                            "description": "Runtime expression — see flow-runtime expression DSL"
+                          }
+                        },
+                        "required": [
+                          "when",
+                          "error"
+                        ]
+                      },
+                      "prompt": {
+                        "anyOf": [
+                          {},
+                          {
+                            "type": "array",
+                            "items": {}
+                          }
+                        ]
+                      },
+                      "on_collect": {
+                        "anyOf": [
+                          {},
+                          {
+                            "type": "array",
+                            "items": {}
+                          }
+                        ]
+                      },
+                      "type": {
+                        "type": "string",
+                        "const": "media"
+                      },
+                      "media_kind": {
+                        "type": "string",
+                        "enum": [
+                          "image",
+                          "document"
+                        ]
+                      },
+                      "multiple": {
+                        "type": "boolean"
+                      },
+                      "skip_title": {
+                        "type": "string",
+                        "description": "Runtime expression — see flow-runtime expression DSL"
+                      }
+                    },
+                    "required": [
+                      "field"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "transient": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "complete": {
+                  "anyOf": [
+                    {},
+                    {
+                      "type": "array",
+                      "items": {}
+                    }
+                  ]
+                },
+                "gap_instructions": {
+                  "type": "string",
+                  "description": "Runtime expression — see flow-runtime expression DSL"
+                },
+                "progress": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fields"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "collect"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "pause": {
+              "type": "object",
+              "properties": {
+                "on_resume": {
+                  "anyOf": [
+                    {},
+                    {
+                      "type": "array",
+                      "items": {}
+                    }
+                  ]
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "pause"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "render": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "render_intent": {
+                      "type": "string",
+                      "enum": [
+                        "list_picker",
+                        "buttons_picker",
+                        "carousel",
+                        "cta_url",
+                        "text_card",
+                        "flow_form",
+                        "detail_card",
+                        "entity_detail_card",
+                        "auto_collection",
+                        "field_prompt",
+                        "product_card",
+                        "product_list",
+                        "catalog_link",
+                        "order_details",
+                        "order_status"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "render_intent"
+                  ],
+                  "additionalProperties": {}
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "if": {
+                      "type": "string"
+                    },
+                    "then": {},
+                    "else": {}
+                  },
+                  "required": [
+                    "if",
+                    "then"
+                  ]
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "memory_note": {
+              "type": "string"
+            },
+            "data": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "instructions": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "render"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "end": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "applied",
+                    "aborted",
+                    "failed"
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "applied",
+                        "aborted",
+                        "failed"
+                      ]
+                    },
+                    "body": {
+                      "type": "string"
+                    },
+                    "instructions": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "publish": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "end"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "assign": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "assign"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "note": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "note"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "answer": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "instructions": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "instructions"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "answer"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "goto": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "goto"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "foreach": {
+              "type": "object",
+              "properties": {
+                "in": {
+                  "type": "string",
+                  "description": "Runtime expression — see flow-runtime expression DSL"
+                },
+                "as": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "body": {
+                  "anyOf": [
+                    {},
+                    {
+                      "type": "array",
+                      "items": {}
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "in",
+                "body"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "foreach"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "track": {
+              "type": "object",
+              "properties": {
+                "event": {
+                  "type": "string"
+                },
+                "stage_enter": {
+                  "type": "string"
+                },
+                "goal_reached": {
+                  "type": "string"
+                },
+                "journey": {
+                  "type": "string"
+                },
+                "value": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                },
+                "metadata": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                },
+                "timeline": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "track"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

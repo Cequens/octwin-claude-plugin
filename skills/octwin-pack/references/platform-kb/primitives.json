@@ -1,0 +1,3845 @@
+{
+  "version": "1.0",
+  "source": "platform",
+  "primitives": [
+    {
+      "name": "analyze_image",
+      "describe": "Analyze image(s) with a vision model via the platform Inference adapter. `image` is a URL or data URL; pass `images: [{image, mime_type}]` to analyze a batch in ONE call. `json: true` parses the output. Returns `{ text, json? }` on `ok`.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mime_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "image": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "mime_type": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "image",
+                "mime_type"
+              ]
+            }
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "json": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "json": {}
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "booking_cancel",
+      "describe": "Cancel a booking (XRM record): stage → cancelled + release the slot seat. Ports: ok · not_cancellable · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "not_cancellable": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "booking_reschedule",
+      "describe": "Move a booking (XRM record) to a new slot: claim the new seat, patch the record, release the old. Returns fresh reminders[].send_at. Ports: ok · full · invalid_slot · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string"
+          },
+          "new_slot_start": {
+            "type": "string"
+          },
+          "slot_minutes": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "record_id",
+          "new_slot_start"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "full": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "invalid_slot": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "booking_reserve",
+      "describe": "Reserve a slot on a resource (an XRM record) — claims capacity race-free + writes the `booking` record. `fields` carries the pack's extended booking fields; `contact_id` defaults to the conversation contact. Returns reminders[].send_at for schedule_notify. Ports: ok · full · invalid_slot · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "resource_record_id": {
+            "type": "string"
+          },
+          "slot_start": {
+            "type": "string"
+          },
+          "slot_minutes": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "fields": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "initial_stage": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "resource_record_id",
+          "slot_start"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "full": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "invalid_slot": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "campaign_create",
+      "describe": "Create an outreach campaign (a `campaign` record at draft) over an entity segment / where-filter. Returns { campaign_id }; send with campaign_send. Ports: ok · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "entity": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "segment_key": {
+            "type": "string"
+          },
+          "where": {},
+          "channel": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "entity",
+          "message"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "campaign_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "campaign_id"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "campaign_send",
+      "describe": "Send a campaign by id: resolve its audience + fan out one delivery per matched contact (via reminders), advancing it to `sent`. Returns { matched, enqueued, truncated, stage }. Ports: ok · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "campaign_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "campaign_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "matched": {
+              "type": "number"
+            },
+            "enqueued": {
+              "type": "number"
+            },
+            "truncated": {
+              "type": "boolean"
+            },
+            "stage": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "matched",
+            "enqueued",
+            "truncated",
+            "stage"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "cancel_scheduled",
+      "describe": "Cancel all pending scheduled messages for a `dedupe_key` (the handle passed to a prior schedule_notify). Returns how many were cancelled.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "dedupe_key": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "dedupe_key"
+        ]
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "cancelled": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "cancelled"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "cart_add",
+      "describe": "Add a product (by retailer_id / SKU) to the contact's open cart, snapshotting its name/price/image from the catalog. Returns the updated cart view with precomputed totals. Ports: ok (CartView) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "qty": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "contact_id",
+          "product_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "invalid": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "cart_clear",
+      "describe": "Empty the contact's open cart. Ports: ok ({}) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "cart_remove",
+      "describe": "Remove a line from the contact's open cart. Returns the updated cart view. Ports: ok (CartView) · invalid (item not in cart) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string"
+          },
+          "retailer_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "contact_id",
+          "retailer_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "invalid": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "cart_submit",
+      "describe": "Submit the contact's open cart → create an order (reference_id) + mark the cart submitted. Returns the OrderView. Ports: ok (OrderView) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "cart_update_qty",
+      "describe": "Set a cart line's quantity (qty 0 removes it). Returns the updated cart view. Ports: ok (CartView) · invalid (item not in cart) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string"
+          },
+          "retailer_id": {
+            "type": "string"
+          },
+          "qty": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "contact_id",
+          "retailer_id",
+          "qty"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "invalid": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "cart_view",
+      "describe": "Return the contact's open cart: line items + precomputed subtotal/totals. The CartView carries an `empty` flag. Ports: ok (CartView) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "case_attach",
+      "describe": "Attach an uploaded media asset (a MEDIA- ref) to a case: link it (surfaces in the case's Attachments) and record it on the timeline. Use after case_open/case_reply when the customer sent evidence. Ports: ok ({ case_id, media_ref }) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "case_id": {
+            "type": "string"
+          },
+          "media_id": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_id",
+          "media_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string"
+            },
+            "media_ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "case_id",
+            "media_ref"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "case_get",
+      "describe": "Fetch one case + its timeline by id. Ports: ok ({ case, events }) · empty (not found) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "case_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "case_list",
+      "describe": "List the current contact's support cases (optionally filtered by status). Ports: ok (rows) · empty · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "case_open",
+      "describe": "Open a support case from this conversation. `type` must be a declared case type; `fields` is the collected data bag. Queue + priority + SLA come from the pack's case-type declaration. Ports: ok ({ case_id, case_number, sla_hours, sla_due_at }) · failed. Use `case_number` (a per-project ticket number) + `sla_hours` to confirm the ticket to the customer.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "type"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string"
+            },
+            "case_number": {
+              "type": "number"
+            },
+            "sla_hours": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "sla_due_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "case_id",
+            "case_number",
+            "sla_hours",
+            "sla_due_at"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "case_reply",
+      "describe": "Record the customer's reply into their case: append it to the timeline (the 2nd-line team sees it) and, if the case was awaiting the customer, move it back to in_progress. Use this whenever the customer supplies information a case asked for. Ports: ok ({ case_id, status }) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "case_id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_id",
+          "message"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "case_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "case_id",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "case_transition",
+      "describe": "Move a case to a new status (workflow-validated). Ports: ok ({ status }) · failed (illegal transition / not found).",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "case_id": {
+            "type": "string"
+          },
+          "to_status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "case_id",
+          "to_status"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "catalog_get",
+      "describe": "Fetch one product from the platform catalog by retailer_id. Ports: ok (render-ready product row) · empty (null, not found) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "retailer_id": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "retailer_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "catalog_list",
+      "describe": "List products from the platform catalog with optional structured filters (category, brand, min_price/max_price in major units, availability), newest first. Returns render-ready rows. Ports: ok (rows) · empty ([]) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "max_price": {
+            "type": "number"
+          },
+          "availability": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {}
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {}
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "db_delete",
+      "describe": "Delete rows matching a structured `where` (REQUIRED, non-empty); returns the deleted count.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "minLength": 1
+          },
+          "where": {}
+        },
+        "required": [
+          "table",
+          "where"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "count": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "count"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "db_insert",
+      "describe": "Insert one row (object) or many (array) into a pack install table; the `ok` port returns the inserted rows array directly.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "minLength": 1
+          },
+          "values": {
+            "anyOf": [
+              {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "table",
+          "values"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {}
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "db_rpc",
+      "describe": "Call a Postgres function (RPC) in the pack install schema. The function MUST be defined in a pack migration. Use for joins/aggregations/fuzzy matching that exceed a single-table db_select. Ports: `ok` (the RPC value directly — array of rows, or scalar/object — when non-empty), `empty` (no result — null or []), `failed`. A bare `bind:` binds the payload regardless; use `outputs:` to route the empty case without a follow-up if-check.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "fn": {
+            "type": "string",
+            "minLength": 1
+          },
+          "params": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "fn"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "db_select",
+      "describe": "Read rows from the pack install schema with a structured query (table, columns, where, order, limit, offset, single). Single-table reads; use db_rpc for joins/aggregations. Ports: `ok` (non-empty rows array, or the found row when `single`), `empty` (no result — [] rows / null single), `failed`. A bare `bind:` binds the payload regardless (`[]`/`null`); use `outputs:` to route the empty case without a follow-up if-check.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "minLength": 1
+          },
+          "columns": {
+            "type": "string"
+          },
+          "where": {},
+          "order": {},
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "single": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "table"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "db_update",
+      "describe": "Update rows matching a structured `where` (REQUIRED, non-empty) with `set`; returns the updated rows + count.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "minLength": 1
+          },
+          "where": {},
+          "set": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "table",
+          "where",
+          "set"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "array",
+              "items": {}
+            },
+            "count": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "rows",
+            "count"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "db_upsert",
+      "describe": "Insert-or-update one/many rows (optionally on a unique constraint via `on_conflict`); the `ok` port returns the affected rows array directly.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "table": {
+            "type": "string",
+            "minLength": 1
+          },
+          "values": {
+            "anyOf": [
+              {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              }
+            ]
+          },
+          "on_conflict": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "table",
+          "values"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {}
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "embed_text",
+      "describe": "Embed a text string into a vector via the platform Inference adapter. Returns `{ embedding, dimensions }` on `ok`, where `embedding` is a pgvector text literal ready to bind to a `vector` column / RPC arg.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "text"
+        ]
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "embedding": {
+              "type": "string"
+            },
+            "dimensions": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "embedding",
+            "dimensions"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "generate_text",
+      "describe": "One-shot LLM text generation via the platform Inference adapter. `model` defaults to GENERATE_MODEL. Returns `{ text, usage? }` on `ok`.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model": {
+            "type": "string"
+          },
+          "system": {
+            "type": "string"
+          },
+          "temperature": {
+            "type": "number"
+          },
+          "max_tokens": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "usage": {
+              "type": "object",
+              "properties": {
+                "input_tokens": {
+                  "type": "number"
+                },
+                "output_tokens": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "get_media",
+      "describe": "Resolve a media asset by id or `MEDIA-XXXXXXXX` ref. Returns `{ url, mime_type, kind, caption, metadata }` on the `found` port — the URL is a fresh public/signed URL suitable for renderers or downstream fetch.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "media_id": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "media_id"
+        ]
+      },
+      "portSchemas": {
+        "found": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "media_id": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "image",
+                "document"
+              ]
+            },
+            "mime_type": {
+              "type": "string"
+            },
+            "caption": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "url": {
+              "type": "string"
+            },
+            "metadata": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "media_id",
+            "kind",
+            "mime_type",
+            "caption",
+            "url",
+            "metadata"
+          ],
+          "additionalProperties": false
+        },
+        "not_found": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "log_values",
+      "describe": "Debug probe — emit a structured log line with the values the YAML wants to observe. Pure side-effect, no return data. Use to confirm an expression resolves correctly without adding a render or memory note.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "values": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warn",
+              "error"
+            ]
+          }
+        },
+        "required": [
+          "label",
+          "values"
+        ]
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "notify",
+      "describe": "Channel-agnostic cross-user delivery. Resolves the recipient contact, selects the per-channel strategy, persists a `notifications` row, and returns one of: delivered / pending / failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "to": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "contact_id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "contact_id"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "whatsapp",
+                      "slack",
+                      "web",
+                      "voice",
+                      "sms"
+                    ]
+                  },
+                  "channel_contact_handle": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "channel",
+                  "channel_contact_handle"
+                ]
+              }
+            ]
+          },
+          "intent": {},
+          "memory_note": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "permanent",
+              "ephemeral",
+              "diagnostic"
+            ]
+          },
+          "echo_delivery": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "to",
+          "intent"
+        ]
+      },
+      "portSchemas": {
+        "delivered": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "notification_id": {
+              "type": "string"
+            },
+            "provider_message_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "notification_id"
+          ],
+          "additionalProperties": false
+        },
+        "pending": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "notification_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "notification_id"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "notification_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "notification_id",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "order_get",
+      "describe": "Fetch an order by reference_id. Ports: ok (OrderView) · empty (null) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "reference_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "order_list",
+      "describe": "List orders (newest first), optionally scoped to a contact_id and filtered by status / payment_status. Ports: ok ({ orders, total }) · empty (no matches) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "contact_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "payment_status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "order_update_status",
+      "describe": "Update an order's fulfillment + payment status by reference_id. Ports: ok (OrderView) · empty (null) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "reference_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "payment_status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reference_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "payment_request",
+      "describe": "Build the payment rail for an order checkout (v1: payment_link). Returns { payment_url, rail, reference_id } for embedding in an order_details render. Ports: ok · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "reference_id": {
+            "type": "string"
+          },
+          "checkout_base_url": {
+            "type": "string"
+          },
+          "rail": {
+            "type": "string",
+            "enum": [
+              "payment_link",
+              "payment_gateway",
+              "pix",
+              "boleto"
+            ]
+          }
+        },
+        "required": [
+          "reference_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "product_search",
+      "describe": "Semantic + filtered product search over the platform catalog. Embeds `query` and ranks by similarity, combined with optional structured filters (category, brand, min_price/max_price in major units, availability). Returns render-ready rows ({ retailer_id, title, price, price_minor, currency, image_url, description, similarity }). Ports: ok (rows) · empty ([]) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "min_price": {
+            "type": "number"
+          },
+          "max_price": {
+            "type": "number"
+          },
+          "availability": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {}
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {}
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "recommend_related",
+      "describe": "Related/upsell products (nearest embedding neighbours to retailer_id). Returns render-ready rows. Ports: ok (rows) · empty ([]) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "retailer_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "locale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "retailer_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {}
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "array",
+          "items": {}
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_aggregate",
+      "describe": "Aggregate a where-filtered record set: `count` (no field) or a numeric op (avg/sum/min/max/median) over a number/money `field`. Project-wide by default; pass `contact_id` to scope. Ports: ok ({ value }) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "op": {
+            "type": "string",
+            "enum": [
+              "count",
+              "avg",
+              "sum",
+              "min",
+              "max",
+              "median"
+            ]
+          },
+          "field": {
+            "type": "string"
+          },
+          "where": {},
+          "contact_id": {
+            "type": "string"
+          },
+          "active_only": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entity",
+          "op"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "value": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "value"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_get",
+      "describe": "Fetch one XRM record by `record_id`, or by `entity` + `match: { field?, value }` (field defaults to the entity's `dedupe_by`). `expand: [ref_field, ref_field.ref_field]` resolves record/contact ref fields into a `refs` map. Ports: ok (record + refs?) · not_found · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string"
+          },
+          "entity": {
+            "type": "string"
+          },
+          "match": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "value": {}
+            },
+            "required": [
+              "value"
+            ]
+          },
+          "expand": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "entity": {
+              "type": "string"
+            },
+            "record_number": {
+              "type": "number"
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "stage": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "contact_id": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "fields": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            "created_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "refs": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "id",
+            "entity",
+            "record_number",
+            "title",
+            "stage",
+            "contact_id",
+            "fields",
+            "created_at",
+            "updated_at"
+          ],
+          "additionalProperties": false
+        },
+        "not_found": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_group",
+      "describe": "Group an entity's records by one dimension (`by`: a scalar field or 'stage') with per-group metrics: count (always) + named `metrics` ({ op: sum|avg|min|max|distinct_count|only, field }). Optional `where:` AST, `contact_id`, `sort: { by: count|key|<metric>, dir }`, `limit`, `expand_refs` (resolve record/contact keys + only-values into `refs`). Payload: { groups: [{ key, count, metrics }], refs? }. Ports: ok · empty · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "by": {
+            "type": "string"
+          },
+          "metrics": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "op": {
+                  "type": "string",
+                  "enum": [
+                    "sum",
+                    "avg",
+                    "min",
+                    "max",
+                    "distinct_count",
+                    "only"
+                  ]
+                },
+                "field": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "op",
+                "field"
+              ]
+            }
+          },
+          "where": {},
+          "contact_id": {
+            "type": "string"
+          },
+          "active_only": {
+            "type": "boolean"
+          },
+          "sort": {
+            "type": "object",
+            "properties": {
+              "by": {
+                "type": "string"
+              },
+              "dir": {
+                "default": "desc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "required": [
+              "by"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expand_refs": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entity",
+          "by"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_link",
+      "describe": "Add (or with `remove: true`, remove) a to-many link on a declared relation — exactly one of `to_record_id` / `to_contact_id`. Idempotent. Ports: ok ({ record_id, relation, changed }) · not_found · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string"
+          },
+          "relation": {
+            "type": "string"
+          },
+          "to_record_id": {
+            "type": "string"
+          },
+          "to_contact_id": {
+            "type": "string"
+          },
+          "remove": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "record_id",
+          "relation"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "record_id": {
+              "type": "string"
+            },
+            "relation": {
+              "type": "string"
+            },
+            "changed": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "record_id",
+            "relation",
+            "changed"
+          ],
+          "additionalProperties": false
+        },
+        "not_found": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_list",
+      "describe": "List XRM records as a page envelope { rows, total, offset, limit, has_more, next_offset, refs? }. Pass a declared `segment` (project-wide), or an `entity` (scoped to the current contact unless `all: true` / `contact_id`). Optional inline `where:` AST, `stage`, `sort_by: { field, dir }` (field-value ordering), `offset`, `limit`, `expand: [ref_field, …]`. Ports: ok · empty (rows: []) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string"
+          },
+          "where": {},
+          "contact_id": {
+            "type": "string"
+          },
+          "all": {
+            "type": "boolean"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "active_only": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "updated_at",
+              "created_at",
+              "record_number",
+              "stage"
+            ]
+          },
+          "sort_by": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "dir": {
+                "default": "asc",
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "required": [
+              "field"
+            ]
+          },
+          "expand": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_note",
+      "describe": "Append a note to an XRM record's timeline. Ports: ok ({ record_id }) · not_found · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "record_id",
+          "body"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "record_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "record_id"
+          ],
+          "additionalProperties": false
+        },
+        "not_found": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_notify",
+      "describe": "Relay a message to a record's linked contact (via notify) and log a customer-visible message_out timeline event with delivery status — written even on failure. Ports: ok ({ notified, failure_reason? }) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "memory_note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_id",
+          "body"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "notified": {
+              "type": "boolean"
+            },
+            "failure_reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "notified"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_related",
+      "describe": "Records most similar to `record_id` by semantic embedding (\"also viewed\" / related items). The entity must declare `search.semantic` in xrm.yaml. Project-wide by default; pass `contact_id` to scope, `where:` to facet, `limit`, `expand: [ref_field, …]`. Payload: { rows (ranked, w/ score), refs? }. Ports: ok · empty (rows: []) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "record_id": {
+            "type": "string"
+          },
+          "where": {},
+          "contact_id": {
+            "type": "string"
+          },
+          "active_only": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expand": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "entity",
+          "record_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_save",
+      "describe": "Create or update an XRM record. `entity` must be a declared entity; `fields` validates against its spec. Pass `record_id` to update, or `match: { value }` for a dedupe upsert on the entity's `dedupe_by` field. Ports: ok ({ record_id, record_number, entity, title, stage, created }) · invalid ({ reason, fields? } — per-field validation, agent fixes + retries) · failed ({ reason } — system).",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "record_id": {
+            "type": "string"
+          },
+          "match": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "value": {}
+            },
+            "required": [
+              "value"
+            ]
+          },
+          "stage": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "no_contact": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "record_id": {
+              "type": "string"
+            },
+            "record_number": {
+              "type": "number"
+            },
+            "entity": {
+              "type": "string"
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "stage": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "created": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "record_id",
+            "record_number",
+            "entity",
+            "title",
+            "stage",
+            "created"
+          ],
+          "additionalProperties": false
+        },
+        "invalid": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "field",
+                  "message"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_search",
+      "describe": "Search an entity's records by relevance to `query` (fuzzy; semantic when the entity opts in). Project-wide by default; pass `contact_id` to scope. Optional `where:` facet filter, `active_only`, `limit`, `expand: [ref_field, …]` (resolves ref fields into `refs`). The entity must declare `search:` in xrm.yaml. Payload: { rows (ranked, w/ score), refs? }. Ports: ok · empty (rows: []) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "where": {},
+          "contact_id": {
+            "type": "string"
+          },
+          "active_only": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expand": {
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "record_stage",
+      "describe": "Move an XRM record to pipeline stage `to` (optionally with a timeline `note`). Ports: ok ({ record_id, from, to, terminal }) · not_allowed ({ from, to, allowed — offer these instead }) · not_found · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "record_id",
+          "to"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "record_id": {
+              "type": "string"
+            },
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "terminal": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "record_id",
+            "from",
+            "to",
+            "terminal"
+          ],
+          "additionalProperties": false
+        },
+        "not_allowed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "allowed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "from",
+            "to",
+            "allowed"
+          ],
+          "additionalProperties": false
+        },
+        "not_found": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "resolve_contact_by_metadata",
+      "describe": "Look up a platform contact by a namespaced (namespace, field, value) triple within the current tenant. Fallback path for packs that do not store the contact id on their own user row. Returns ok / not_found / failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "minLength": 1
+          },
+          "field": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "namespace",
+          "field",
+          "value"
+        ]
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "contact_id": {
+              "type": "string"
+            },
+            "channel": {
+              "type": "string"
+            },
+            "channel_contact_handle": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "contact_id",
+            "channel",
+            "channel_contact_handle"
+          ],
+          "additionalProperties": false
+        },
+        "not_found": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "schedule_notify",
+      "describe": "Schedule a notify for later delivery (deliver `intent` to a contact at `send_at`). Use `dedupe_key` for idempotency + as a handle to later `cancel_scheduled`. The intent (incl. any button taps) is delivered verbatim.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "object",
+            "properties": {
+              "contact_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "contact_id"
+            ]
+          },
+          "send_at": {
+            "type": "string"
+          },
+          "intent": {},
+          "memory_note": {
+            "type": "string"
+          },
+          "dedupe_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "send_at",
+          "intent"
+        ]
+      },
+      "portSchemas": {
+        "scheduled": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "scheduled_id": {
+              "type": "string"
+            },
+            "deduped": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "deduped"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "send_message",
+      "describe": "Send a text or rendered intent to the active channel mid-flow. Distinct from `render:` (which emits ONE response per step) — use `send_message` when a step needs to emit multiple messages, e.g. progress updates.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "intent": {}
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "portSchemas": {
+        "delivered": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "provider_message_id": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "set_media_metadata",
+      "describe": "Merge a JSONB patch into a media asset's `metadata` column. Used by pack media-handler flows to attach analysis results (vision output, OCR text, …) to the asset record. Top-level keys replace wholesale (jsonb || semantics).",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "media_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "patch": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "media_id",
+          "patch"
+        ]
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "slot_list",
+      "describe": "Free future bookable slots for a resource (an XRM record) over a date window. Returns structured rows { slot_start, slot_end, slot_minutes, remaining, capacity, dow, local_date, local_time, meta } — `meta` is the rule's opaque bag (e.g. a per-day branch); compose the label pack-side. Ports: ok · empty · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "resource_record_id": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "days": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "resource_record_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "storage_remove",
+      "describe": "Delete bucket/path from the pack install bucket.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "bucket": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "bucket",
+          "path"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "ok": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "ok"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "survey_submit",
+      "describe": "Record a survey response: validate `answers` against the declared `survey`, write a survey_response XRM record (upsert on `subject_ref`), compute the score. `contact_id` defaults to the conversation contact. Ports: ok ({ record_id, score }) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "survey": {
+            "type": "string"
+          },
+          "answers": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "subject_ref": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "survey"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "record_id": {
+              "type": "string"
+            },
+            "score": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "record_id",
+            "score"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "task_complete",
+      "describe": "Close an open XRM task as done (default) or cancelled. Ports: ok ({ task_id, status }) · not_found (unknown / already closed) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "done",
+              "cancelled"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "task_id",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "not_found": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "task_list",
+      "describe": "List XRM follow-up tasks for a record or contact (default: the conversation's contact), soonest-due first. `overdue_only: true` narrows to overdue open tasks. Ports: ok (rows) · empty · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "record_id": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "done",
+              "cancelled"
+            ]
+          },
+          "overdue_only": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "empty": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "task_open",
+      "describe": "Open an operator follow-up task (optionally on a record; contact defaults to the conversation's). Due time: `due_at` (ISO) or `due_in_hours` — not both. Ports: ok ({ task_id, due_at }) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "body": {
+            "type": "string"
+          },
+          "record_id": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "due_at": {
+            "type": "string"
+          },
+          "due_in_hours": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "task_id": {
+              "type": "string"
+            },
+            "due_at": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "task_id",
+            "due_at"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "track_event",
+      "describe": "Emit a customer-journey signal (one of event / stage_enter / goal_reached). An `event` fans out into its declared stage/goal transitions. `journey:` is only needed when the id is ambiguous across the pack's journeys.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "journey": {
+            "type": "string"
+          },
+          "event": {
+            "type": "string"
+          },
+          "stage_enter": {
+            "type": "string"
+          },
+          "goal_reached": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "metadata": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        }
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "written": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "written"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "upsert_platform_contact",
+      "describe": "Overlay pack-domain details onto the platform `contacts` row for (tenant, channel, channel_contact_handle). Used inside a pre-turn flow AFTER lookup_or_create_pack_user to layer pack name / language / namespaced pack_metadata onto the platform's baseline upsert. Idempotent (ON CONFLICT DO UPDATE); JSONB metadata deep-merges per namespace.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "channel_contact_handle": {
+            "type": "string",
+            "minLength": 1
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "slack",
+              "web",
+              "voice",
+              "sms"
+            ]
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pack_metadata": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": [
+          "channel_contact_handle"
+        ]
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "contact_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "contact_id"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "work_action",
+      "describe": "Apply a declared operator action to a worked record: records the decision, optionally transitions the stage (action.to_stage), optionally relays `relay_body` to the record's contact (when the action declares relay). Ports: ok (ApplyActionResult) · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "record_id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "params": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "relay_body": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity",
+          "record_id",
+          "action"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema"
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "name": "work_open",
+      "describe": "Open a worked record: save an XRM record of `entity` (fields incl. any sub-type discriminator) and enroll it into its routed worklist queue. `contact_id` defaults to the conversation contact. Returns { record_id, record_number, queue_key } (queue_key null = unrouted). Ports: ok · failed.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "entity": {
+            "type": "string"
+          },
+          "fields": {
+            "default": {},
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {}
+          },
+          "stage": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entity"
+        ],
+        "additionalProperties": {}
+      },
+      "portSchemas": {
+        "ok": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "record_id": {
+              "type": "string"
+            },
+            "record_number": {
+              "type": "number"
+            },
+            "queue_key": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "record_id",
+            "record_number",
+            "queue_key"
+          ],
+          "additionalProperties": false
+        },
+        "failed": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "reason": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

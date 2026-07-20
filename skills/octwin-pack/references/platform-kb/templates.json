@@ -1,0 +1,70 @@
+{
+  "version": "1.0",
+  "templates": [
+    {
+      "name": "approve_apply",
+      "summary": "Render an approve/decline detail_card with two buttons, pause, then resume",
+      "description": "Render an approve/decline detail_card with two buttons, pause, then resume\ninto one of three step ids based on the user's choice. Wire `on_other` to\na collect / re-analyze step so users can update fields during the preview\nwithout cancelling the workflow.",
+      "params": [
+        {
+          "name": "preview",
+          "type": "string",
+          "required": true,
+          "describe": "Preview body shown on the approve/decline card."
+        },
+        {
+          "name": "apply",
+          "type": "string",
+          "required": true,
+          "describe": "Step id to goto when approved."
+        },
+        {
+          "name": "abort",
+          "type": "string",
+          "required": false,
+          "describe": "Step id to goto when declined (XOR abort_render)."
+        },
+        {
+          "name": "abort_render",
+          "type": "object",
+          "required": false,
+          "describe": "Inline render shown on decline + end aborted (XOR abort)."
+        },
+        {
+          "name": "on_other",
+          "type": "string",
+          "required": false,
+          "describe": "Step id when resume is neither approve nor decline (e.g. user typed fields)."
+        },
+        {
+          "name": "header",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "footer",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "confirm_title",
+          "type": "string",
+          "required": false,
+          "describe": "Approve-button title (locale-resolved at render). Default: Arabic تأكيد ✅."
+        },
+        {
+          "name": "cancel_title",
+          "type": "string",
+          "required": false,
+          "describe": "Decline-button title (locale-resolved at render). Default: Arabic إلغاء ❌."
+        },
+        {
+          "name": "memory_note",
+          "type": "string",
+          "required": false,
+          "describe": "Breadcrumb (with {$expr} interpolation) attached to the approve/decline render — surfaced next turn."
+        }
+      ]
+    }
+  ]
+}
