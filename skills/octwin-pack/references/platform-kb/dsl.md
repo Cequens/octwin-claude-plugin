@@ -239,14 +239,16 @@ confirmation/preview card can list them COLLECTIVELY ("you can also add: …") r
 seller through each one. A field with no `prompt:` gets the **engine-synthesized gap prompt** —
 a `field_prompt` for `$collect_field` carrying `gap_instructions` + `data:{status:gap}` (a single
 bare `{ field: x }` routes to it). **`options:`** is authoring sugar for a picker — desugared at load into the canonical
-`prompt: [ (fetch?) assign ps_sections + fp_*, use: field_prompt_render ]`. **Static**: `enum`+`values`
+`prompt: [ (fetch?) assign ps_sections + fp_*, use: field_prompt_render ]`. `field_prompt_render` is a **platform-provided**
+template (`src/platform/flow-runtime/templates/`) — you never author it, and the sugar works in any pack out of the box; a pack
+may ship its own `templates/field_prompt_render.template.yaml` to override the render. **Static**: `enum`+`values`
 / `items` / `sections`. **Dynamic**: `fetch: { do, args, bind? }` (run a `do`, bind its result —
 default `__opt_<field>`) + `rows:` (the array off the bind — default `$<bind>` for `db_select`;
 envelope RPCs select a sub-path, e.g. `rows: '$ci.compounds'`) + `map: { value, label, selection,
 description? }` shaping each row into an option; zero rows → no render → synthesized gap prompt.
-`header`/`body`/`cta` take a bare locale key (→ `$t(key)`) **or** a full `$…` expr verbatim (e.g.
+`header`/`body`/`cta`/`footer` take a bare locale key (→ `$t(key)`) **or** a full `$…` expr verbatim (e.g.
 `'$t("k", { area: $state.city })'`; the `rows` bind is in scope, so a body may read
-`$ci.area_name_ar`). **`auto_resolve: true`** — a picker whose fetch yields exactly ONE option
+`$ci.area_name_ar`). All four are optional — an omitted one simply isn't rendered. **`auto_resolve: true`** — a picker whose fetch yields exactly ONE option
 merges that lone selection into the bag and renders nothing; the collect engine's progress-loop
 re-runs the missing pass (no pointless one-option tap). **`narrow: { field, options }`** — a CASCADE:
 a coarser picker shown first, but ONLY when the target list won't fit one render. The fit-check is

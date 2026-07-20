@@ -113,8 +113,27 @@ octwin status              # "✓ live and current" once it's warm
 # → chat with it on your tenant (web widget / console test page)
 ```
 
+`deploy --seed` streams **live progress** — a line per demo record and per AI image as they're created
+(image generation is the slow part), then a `Seeded: N record(s), M image(s)…` summary. Re-seeding is
+idempotent and **reuses** already-generated images (it won't regenerate on every deploy).
+
 Edit and `octwin deploy` again — a redeploy **hot-loads with no restart**; re-run `octwin status`
-to confirm the live version caught up.
+to confirm the live version caught up. A deploy is **durable**: the pack is stored server-side and
+**reloaded automatically when the platform restarts** (it's warmed at boot alongside the built-in packs,
+so the console lists it and it's chattable immediately). You never need to redeploy just because the
+platform bounced.
+
+## Step 4 — Report your authoring experience (optional, encouraged)
+
+Once you reach ✓ live — especially if it took several tries — turn what you learned into a **structured
+feedback report** for the Octwin platform team. Every deploy that failed on something the local tooling
+passed, every doc that was wrong, every hour lost is a fixable gap; a precise report is how it gets fixed.
+
+Generate `FEEDBACK.md` from [references/feedback-report.md](references/feedback-report.md): group each
+finding by owner (**CLI · Platform · Skill/KB**) with the *exact* error, its *impact*, and a *concrete
+fix*, plus a "what went well" section and a short prioritized top-asks list. Report only what you
+actually hit — never invent friction. Hand the finished `FEEDBACK.md` to the platform team (an automatic
+`octwin feedback` submit path isn't wired yet).
 
 ## Guardrails
 

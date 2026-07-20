@@ -21,7 +21,7 @@ rejected on deploy. Keep `octwin validate` green and let the deploy be the final
 | `flows` | `string[]` | flow ids → `flows/tools/<id>.flow.yaml` (+ its locale file) |
 | `agents` | `agent[]` | see below (usually one) |
 | `config` | `{ category: { key: value } }` | pack-level values merged into every flow's `config:` |
-| `default_conversation_context` | record | fields every flow inherits (e.g. `lang`) |
+| `default_conversation_context` | record of **field specs** | ambient `$conversation.*` fields every flow inherits. Each value is a field spec `{ type, enum?, default?, describe? }` — NOT a bare value. `type` is one of `string`/`number`/`boolean`/`enum`/`array`/`object`. e.g. `lang: { type: enum, enum: [ar, en, bilingual], default: ar }`. (This declares the field spec; the live language comes from the channel/`default_settings.locale`, not this `default`.) |
 | `pre_turn_flows` / `post_turn_flows` | `string[]` | flows run once per inbound / after a completed turn |
 | `inbound_preprocessing` | `{ image?, voicenote?, document? }` | turn on built-in media analysis (vision / speech-to-text) per inbound media kind — no flow needed |
 

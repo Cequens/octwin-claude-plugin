@@ -65,6 +65,12 @@
           "describe": "Breadcrumb (with {$expr} interpolation) attached to the approve/decline render — surfaced next turn."
         }
       ]
+    },
+    {
+      "name": "field_prompt_render",
+      "summary": "Platform render for a collect-field picker (inline; engine suspends + prepends progress; renderer resolves to a list_picker).",
+      "description": "Platform render for a collect-field picker (inline; engine suspends + prepends progress; renderer resolves to a list_picker).",
+      "params": []
     }
   ]
 }

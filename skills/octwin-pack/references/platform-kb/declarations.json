@@ -136,7 +136,15 @@
               "type": "object",
               "properties": {
                 "type": {
-                  "type": "string"
+                  "type": "string",
+                  "enum": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "enum",
+                    "array",
+                    "object"
+                  ]
                 },
                 "describe": {
                   "type": "string"
@@ -2413,7 +2421,7 @@
                 "noop"
               ]
             },
-            "reply_ar": {
+            "reply": {
               "type": "string"
             },
             "source": {
@@ -2423,7 +2431,7 @@
           "required": [
             "match",
             "action",
-            "reply_ar"
+            "reply"
           ],
           "additionalProperties": false
         }
