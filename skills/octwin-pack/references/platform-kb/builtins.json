@@ -507,6 +507,97 @@
         "$slug('')                      → ''"
       ],
       "signature": "(s: unknown): string"
+    },
+    {
+      "name": "t",
+      "category": "runtime-bound",
+      "summary": "Pack-locale string lookup for the run's language. Keys MUST be namespaced (`<pack_id>.…` / `<flow_id>.…`) — a bare key returns the raw string unchanged (lint-enforced).",
+      "description": "Pack-locale string lookup for the run's language. Keys MUST be namespaced (`<pack_id>.…` / `<flow_id>.…`) — a bare key returns the raw string unchanged (lint-enforced). (Runtime-bound: provided per run by FlowTool (locale/pack context), not an evaluator builtin.)",
+      "examples": [
+        "$t('clinic.booking.confirmed')",
+        "$t('ticket-status.reply_prompt', { name: $contact.display_name })"
+      ],
+      "signature": "(key: string, params?: Record<string, unknown>) => string",
+      "kind": "runtime-bound"
+    },
+    {
+      "name": "t_has",
+      "category": "runtime-bound",
+      "summary": "True when the pack locale defines the (namespaced) key for the run's language — guard optional copy before `$t`.",
+      "description": "True when the pack locale defines the (namespaced) key for the run's language — guard optional copy before `$t`. (Runtime-bound: provided per run by FlowTool (locale/pack context), not an evaluator builtin.)",
+      "examples": [
+        "$t_has('clinic.booking.followup_hint')"
+      ],
+      "signature": "(key: string) => boolean",
+      "kind": "runtime-bound"
+    },
+    {
+      "name": "enum_label",
+      "category": "runtime-bound",
+      "summary": "Auto-namespaced enum label: resolves `$t(\"<pack>.<category>.<value>\")` — the pack-level enum-label convention; falls back to `fallback` then the raw value.",
+      "description": "Auto-namespaced enum label: resolves `$t(\"<pack>.<category>.<value>\")` — the pack-level enum-label convention; falls back to `fallback` then the raw value. (Runtime-bound: provided per run by FlowTool (locale/pack context), not an evaluator builtin.)",
+      "examples": [
+        "$enum_label($item.type, 'types')",
+        "$enum_label($case.status, 'case_status', $case.status)"
+      ],
+      "signature": "(value: string, category: string, fallback?: string) => string",
+      "kind": "runtime-bound"
+    },
+    {
+      "name": "loc",
+      "category": "runtime-bound",
+      "summary": "Resolve a LOCALIZED xrm field value (`{ en?, ar? }`) to one display string: viewer locale → en → ar → first string value. Scalars pass through untouched.",
+      "description": "Resolve a LOCALIZED xrm field value (`{ en?, ar? }`) to one display string: viewer locale → en → ar → first string value. Scalars pass through untouched. (Runtime-bound: provided per run by FlowTool (locale/pack context), not an evaluator builtin.)",
+      "examples": [
+        "$loc($item.fields.name)"
+      ],
+      "signature": "(value: unknown) => unknown",
+      "kind": "runtime-bound"
+    },
+    {
+      "name": "record_url",
+      "category": "runtime-bound",
+      "summary": "Absolute public page URL for an XRM record (`GET /r/:recordId`; the entity must declare `public:` in xrm.yaml). Empty string for a non-string/empty id.",
+      "description": "Absolute public page URL for an XRM record (`GET /r/:recordId`; the entity must declare `public:` in xrm.yaml). Empty string for a non-string/empty id. (Runtime-bound: provided per run by FlowTool (locale/pack context), not an evaluator builtin.)",
+      "examples": [
+        "$record_url($item.id)"
+      ],
+      "signature": "(record_id: string) => string",
+      "kind": "runtime-bound"
+    },
+    {
+      "name": "work_types",
+      "category": "runtime-bound",
+      "summary": "The pack's declared work sub-type ids for an entity (its `worklist.yaml` `work.<entity>.types` keys), optionally filtered to types routed by the given field. `[]` when the pack works no such entity.",
+      "description": "The pack's declared work sub-type ids for an entity (its `worklist.yaml` `work.<entity>.types` keys), optionally filtered to types routed by the given field. `[]` when the pack works no such entity. (Runtime-bound: provided per run by FlowTool (locale/pack context), not an evaluator builtin.)",
+      "examples": [
+        "$work_types('case')",
+        "$work_types('case', 'region')"
+      ],
+      "signature": "(entity: string, route_by?: string) => string[]",
+      "kind": "runtime-bound"
+    },
+    {
+      "name": "partial",
+      "category": "runtime-bound",
+      "summary": "Invoke a registered render partial by name (resolved against the pack's partial registry; needs ExprContext).",
+      "description": "Invoke a registered render partial by name (resolved against the pack's partial registry; needs ExprContext). (Runtime-bound: provided per run by the evaluator (needs ExprContext), not an evaluator builtin.)",
+      "examples": [
+        "$partial('price_line', $item)"
+      ],
+      "signature": "(name: string, arg?: unknown) => unknown",
+      "kind": "runtime-bound"
+    },
+    {
+      "name": "diff_lines",
+      "category": "runtime-bound",
+      "summary": "Generic before→after diff body — one line per changed key, labels via `$t`/`$enum_label` (needs ExprContext). Powers edit-confirmation cards.",
+      "description": "Generic before→after diff body — one line per changed key, labels via `$t`/`$enum_label` (needs ExprContext). Powers edit-confirmation cards. (Runtime-bound: provided per run by the evaluator (needs ExprContext), not an evaluator builtin.)",
+      "examples": [
+        "$diff_lines($current, $state, { label_prefix: $pack_id })"
+      ],
+      "signature": "(before: object, after: object, opts?: { header?: string; confirm?: string; label_prefix?: string; enum?: Record<string, string>; skip?: string[] }) => string[]",
+      "kind": "runtime-bound"
     }
   ]
 }

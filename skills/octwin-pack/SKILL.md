@@ -146,6 +146,25 @@ to confirm the live version caught up. A deploy is **durable**: the pack is stor
 so the console lists it and it's chattable immediately). You never need to redeploy just because the
 platform bounced.
 
+### Debugging a live conversation from the CLI (octwin-cli ≥ 0.1.9)
+
+The platform keeps **one open conversation per `--as` handle**, so consecutive `octwin chat` calls
+with the same handle **continue the same conversation** — agent memory, suspended flows, taps and all.
+Renders print in full (every list row / button / carousel card **with its tap id**), so you can drive
+any tap-routed flow headlessly:
+
+```bash
+octwin chat "hi" --as t1                       # turn 1 — menu prints with each row's tap id
+octwin chat --tap "t:invoke:my-flow:x=1" --as t1   # turn 2 — press a rendered row/button
+octwin chat "free text answer" --as t1         # turn 3 — typed reply into the running flow
+octwin logs --as t1                            # find the conversation (handle + last activity)
+octwin logs <conversationId>                   # full timeline: taps, tool events, AND each turn's renders
+octwin cases                                   # casework packs: the ticket inbox; `octwin cases <id>` = timeline
+```
+
+`--json` on `chat`/`logs`/`cases` dumps raw envelopes/events when you need exact payloads. `octwin
+records <entity>` inspects XRM data (cases/tickets are casework — that's `octwin cases`, not `records`).
+
 ## Step 4 — Report your authoring experience (optional, encouraged)
 
 Once you reach ✓ live — especially if it took several tries — turn what you learned into a **structured

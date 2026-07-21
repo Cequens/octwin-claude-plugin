@@ -945,7 +945,7 @@ Available in any `$expr` once the flow is running. Source: [`flow-run-context.ts
 | `$tool_id` | The flow's `flow_id` |
 | `$tenant_id`, `$project_id` | Tenant and project from the inbound boundary |
 | `$locale` | Channel locale (`'ar'` / `'en'` / pack-supplied). Defaults to the Contact row's `language` field or `'ar'` |
-| `$caps` | Channel hard-limits (`list.maxRows`, `buttons.maxRows`, `carousel.maxCards`, etc.). Read-only — primitives + YAML are channel-blind by convention |
+| `$caps` | Channel hard-limits (`list.maxRows`, `buttons.max`, `carousel.max`, `carousel.buttonsPerCard`, `text.*`). Field names + concrete per-channel values are published in the generated channels catalog ([`dist/octwin-platform-kb/channels.json`](../dist/octwin-platform-kb/channels.json) / [`docs/16c`](./16c-platform-stdlib-channels.md)) — never re-spell the numbers in prose. Read-only — primitives + YAML are channel-blind by convention |
 
 ### Conditional (present when supplied)
 

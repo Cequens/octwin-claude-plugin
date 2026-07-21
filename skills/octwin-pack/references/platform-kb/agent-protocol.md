@@ -23,6 +23,8 @@ When a tool returns `data.workflow_run_id`, a workflow is alive: pass `workflow_
 
 Take the id from `data.workflow_run_id` in the latest result; if that scrolled out of context, read `run_id` from the most recent `[INVOKE:…run_id=…]` / `[RESUME:…run_id=…]` line (see §4).
 
+**Stale runs:** a result with `data.status = "stale_run"` means the tapped/cited run already completed or expired — the action was NOT applied. Follow the result's `instructions`: tell the user that option is no longer active and offer to start over by calling the tool fresh (no `workflow_run_id`). Never retry the dead id.
+
 ### 3. Most taps direct-route
 You see only: typed messages, gap-card replies (the user typing into an open slot), and the agent-dispatched taps your pack documents. The rest route straight to their tool.
 

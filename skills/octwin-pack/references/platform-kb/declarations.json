@@ -2586,6 +2586,26 @@
                   }
                 }
               },
+              "service_unavailable": {
+                "type": "object",
+                "properties": {
+                  "failure": {
+                    "type": "object",
+                    "properties": {
+                      "body": {
+                        "type": "string"
+                      },
+                      "instructions": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "body"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
               "unhandled_tool_error": {
                 "type": "object",
                 "properties": {
