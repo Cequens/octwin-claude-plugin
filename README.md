@@ -10,6 +10,7 @@ your tenant — all pure YAML, no TypeScript.
 
 > Companion CLI: [`octwin-cli`](https://www.npmjs.com/package/octwin-cli) — install once with `npm i -g octwin-cli`
 > (or `npx octwin-cli@latest` to run without installing). The skill drives it.
+> Plugin changelog: [CHANGELOG.md](./CHANGELOG.md) · CLI changelog: [`packages/octwin-cli/CHANGELOG.md`](../octwin-cli/CHANGELOG.md).
 
 ## Install (Claude Code plugin)
 
@@ -35,17 +36,17 @@ through `octwin login` / `octwin deploy` to test live on your tenant.
   plugin.json          # plugin manifest
   marketplace.json     # marketplace listing (source: this repo)
 skills/octwin-pack/
-  SKILL.md             # the authoring skill
-  references/
-    manifest.md · flows.md · data-and-render.md   # the CRAFT layer (how to build well)
-    capabilities.md                                # index into the platform KB (what exists)
-    platform-kb/                                   # bundled KB snapshot (offline fallback)
+  SKILL.md             # the authoring skill — the whole plugin (no references folder)
 ```
 
-The skill treats the **platform KB** as its source of truth for what the platform supports (built-in
-`do:` primitives, expression builtins, render intents, the flow-DSL). It reads the **live** reference
-from `.octwin/platform-kb/` after `octwin platform-kb pull`, and falls back to the committed snapshot in
-`skills/octwin-pack/references/platform-kb/`.
+The skill is a single `SKILL.md`: the init → pull → author → validate → deploy → feedback workflow, with
+the FEEDBACK.md template inlined. Everything authoritative — what the platform supports (built-in `do:`
+primitives, expression builtins, render intents, the flow-DSL) **and** the pack-authoring craft guides
+(`craft-manifest` / `craft-flows` / `craft-data-render` / `craft-ux` / `craft-capabilities`) — lives in the
+**platform KB** and is read from `.octwin/platform-kb/` after `octwin platform-kb pull`, pulled live from
+the author's own platform so it always matches that platform's version. The plugin ships **no bundled
+snapshot** (a committed copy only drifts); the CLI instead nudges the author to re-pull when the platform's
+reference changes.
 
 ## Requirements
 
@@ -58,12 +59,14 @@ from `.octwin/platform-kb/` after `octwin platform-kb pull`, and falls back to t
 Update + publish this plugin in **one command** from the platform monorepo:
 
 ```bash
-npm run plugin:publish          # regenerate the platform KB → refresh the bundled snapshot → push here
+npm run plugin:publish          # mirror the skill source → this plugin repo, bump + push
 npm run plugin:publish -- --dry-run   # preview the diff without pushing
 ```
 
-It's a clean **no-op when nothing changed** (the snapshot is deterministic), so it's safe to run any time —
-run it whenever the platform stdlib (primitives / templates / flow-DSL / channels) changes.
+It's a clean **no-op when nothing changed**, so it's safe to run any time — run it whenever the skill
+(`SKILL.md` or its craft references) changes. The plugin no longer carries a platform-KB snapshot, so
+platform-stdlib changes alone don't require a republish; authors always `octwin platform-kb pull` the
+live reference.
 
 ## License
 

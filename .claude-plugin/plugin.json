@@ -1,7 +1,7 @@
 {
   "name": "octwin-pack-author",
   "description": "Author pure-YAML Octwin packs (WhatsApp/web conversational bots) and deploy them with octwin-cli.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "author": {
     "name": "CEQUENS"
   },
