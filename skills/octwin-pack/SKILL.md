@@ -160,6 +160,32 @@ octwin cases                                   # casework packs: the ticket inbo
 `--json` on `chat`/`logs`/`cases` dumps raw envelopes/events when you need exact payloads. `octwin
 records <entity>` inspects XRM data (cases/tickets are casework — that's `octwin cases`, not `records`).
 
+### Reading back what your pack produced (octwin-cli ≥ 0.1.15)
+
+`chat`/`logs` show the conversation; these show the **state it created**. Each needs the matching token
+scope — a 401/403 names which one, so mint a wider token in the console rather than guessing:
+
+```bash
+octwin agents                                  # roster + each agent's EFFECTIVE model and which layer set it
+octwin agents my-pack::assistant --prompt      # the exact system prompt the LLM sees for this project
+octwin orders                                  # orders a checkout produced; `octwin orders <reference_id>` = money + payment state
+octwin analytics                               # entities with a pipeline; `octwin analytics <entity>` = stage conversion
+octwin catalog                                 # commerce products + stock + the WhatsApp catalog binding
+octwin scheduling --slots <resourceRecordId>   # the slots your availability rules actually compute
+```
+
+Three traps these exist to answer:
+
+- **"My declared model isn't being used."** An operator **platform default** can override the pack
+  manifest's `default_model` (and the history window / working memory). `octwin agents <id>` prints the
+  effective value, which layer won, and warns explicitly when your pack's value is not in force.
+- **"The order says `pending` — is checkout broken?"** Usually no. The forward payment lifecycle is
+  **webhook-owned**, and a workspace with no gateway runs the gateway-less `manual` driver, so
+  `payment_request` takes its **`empty`** port and the flow should confirm pay-on-delivery. `octwin orders
+  <ref>` says this inline.
+- **"Where did my funnel go?"** Any entity declared with a `pipeline:` gets stage conversion for free —
+  but a 200 with no data means either no `pipeline:` **or** no `view` grant on `record.<entity>`.
+
 ## Step 4 — Report your authoring experience (optional, encouraged)
 
 Once you reach ✓ live — especially if it took several tries — turn what you learned into a **structured
