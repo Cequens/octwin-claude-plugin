@@ -102,6 +102,13 @@ Four decisions, each with its authoritative guide in the pulled KB (`.octwin/pla
   stage pipeline; also seeds demo data, optionally with AI images) or `worklist.yaml` (support tickets /
   casework) and get storage + the `record_*` / `case_*` built-ins for free. Craft guide:
   **`craft-data-render`** (+ the `xrm-guide` / `casework-guide` reference docs).
+- **Images (optional, octwin-cli ≥ 0.1.16)** — "pure-YAML" bars *code*, not *pictures*. Commit
+  `.jpg/.jpeg/.png/.webp/.gif/.pdf` (≤ 2 MB each, ≤ 32 MB per pack; **no SVG** — script-capable) next
+  to your YAML, declare each under `static_assets: [{ file, key }]` in the manifest, and reference it
+  as `$pack_asset:<key>` from a flow's `config:` — the platform uploads it to the media system at
+  install and the sentinel resolves to the served URL. This is how you ship a brand mark, or the
+  placeholder a `carousel` falls back to when a record has no photo. (Demo *record* images are a
+  different thing — `xrm.yaml` seeds those with AI at `deploy --seed`.)
 - **Agent (`prompts/identity.md` + `manifest.agents[]`)** — expresses **domain intent** and calls flow-tools;
   stays channel-agnostic (the tool decides the channel UI). The prompt says *when* to call a tool; the
   envelope controls *what happens next*. Lead titles/headers/buttons with an emoji (in the locale string, not
