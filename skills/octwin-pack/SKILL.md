@@ -40,39 +40,62 @@ file** before editing — the layout IS the contract:
 
 ```
 manifest.yaml                       # the whole pack is declared here (id, agent, flows, channels)
+commands.yaml                       # slash/keyword commands that jump straight to a flow
+locale.ar.yaml                      # pack-wide strings (per-flow strings live beside each flow)
+messages.ar.yaml                    # platform-emitted message overrides (errors, fallbacks)
 flows/tools/home.flow.yaml          # the MENU HUB — your front door (a list_picker; see the craft-ux guide)
 flows/tools/home.locale.ar.yaml     # the hub's user-visible strings, keyed (referenced via $t)
 flows/tools/browse.flow.yaml        # an example tool the hub invokes — replace with your real capability
 flows/tools/browse.locale.ar.yaml   #   (+ its strings)
 prompts/identity.md                 # the agent's system prompt (who it is, when to call tools)
-pack.json                           # deploy target (platform_url, tenant, project) — not part of the pack
 ```
+
+Nothing else — the directory is pack content only. The deploy target lives in your saved login
+(`octwin login`, Step 3), not in a file here.
 
 ## Step 0.5 — Pull the capability reference (the source of truth, not this skill's prose)
 
 Everything the platform supports — every built-in `do:` primitive, every expression builtin (`$…`), every
 `render_intent`, the full flow-DSL schema, **the declaration schemas for what you write** (`manifest.yaml`,
 `xrm.yaml`, `worklist.yaml`/casework, `scheduling.yaml`, …), **the platform's built-in system entities**
-(`product`/`cart`/`order`/`case`/`booking`), the module authoring docs, **and the pack-authoring craft
+(`product`/`cart`/`order`/`case`/`booking`/`survey_response`/`campaign` — RESERVED keys: extend one
+with `extends: system`, never declare it as your own), the module authoring docs, **and the pack-authoring craft
 guides** — is **not** in this skill. It lives in the **platform KB**, which you **pull straight from YOUR
 platform** so it always matches that platform's exact version (this skill ships no bundled copy — a snapshot
 only goes stale):
 
 ```bash
-# one-time: point pack.json at your platform + `octwin login` (see Step 3), then:
-octwin platform-kb pull        # → .octwin/platform-kb/  (markdown docs + *.json catalogs)
+# one-time: `octwin login --url <your platform> --token oct_…` (see Step 3), then:
+octwin platform-kb pull        # → .octwin/platform-kb/  (INDEX.md + markdown docs + per-entry catalogs)
 ```
 
-**Pull it before you author** and read it as you go — start with **`craft-capabilities`** (the orientation),
-then the craft guides (`craft-ux`, `craft-flows`, `craft-manifest`, `craft-data-render`) and reference docs
-(`primitives-guide`, `dsl`, `runtime`, …), and open the `*.json` catalogs for precise field schemas. The CLI
+**Read `INDEX.md` FIRST — then open only the specific file you need.** The pull writes a map plus one file
+per capability, so a lookup is a small targeted read, never a whole catalog:
+
+```
+.octwin/platform-kb/
+  INDEX.md                        # the map: every doc + every capability, one line each, with its path
+  craft-*.md, dsl.md, runtime.md  # the guides + reference docs
+  primitives/record_list.json     # one file per built-in `do:` primitive
+  render-intents/carousel.json    # one file per render intent — its EXACT fields
+  builtins/map.json               # one file per `$…` expression function, with examples
+  declarations/xrm.json           # one file per declaration file you write (manifest, xrm, worklist, …)
+  system-entities/order.json      # the built-in entities every pack gets free
+```
+
+Never read a whole catalog to find one entry — that is what `INDEX.md` is for. **Pull it before you
+author** and consult it as you go: start with `craft-capabilities` (orientation), then `craft-ux`,
+`craft-flows`, `craft-manifest`, `craft-data-render`, and open the per-entry JSON for exact fields. The CLI
 **watches it for drift**: after any command that talks to the platform, it prints a one-line nudge to re-run
 `octwin platform-kb pull` whenever the platform's reference has changed since your last pull — so your copy
 never silently goes stale.
 
 **Consult it whenever you need to know whether a step / function / render-intent exists or its exact
 fields.** **Never invent a built-in from memory or copy a list out of this skill's prose** — the outline
-below is a map, not the reference; the KB is authoritative.
+below is a map, not the reference; the KB is authoritative. Render intents are the sharpest case: each one
+takes a **fixed** field set (a `carousel` card has `image_url`/`body`/`buttons` and no `title`), the platform
+**rejects** a field outside it, and `octwin validate` flags it offline — so read `render-intents/<name>.json`
+before composing a card rather than guessing from another intent's shape.
 
 ## Step 1 — Author the domain
 
@@ -97,7 +120,8 @@ Four decisions, each with its authoritative guide in the pulled KB (`.octwin/pla
   channel limits** (never `.slice()`/clamp/page/read a cap in YAML — return all the data + one render intent;
   litmus: *would the value change if WhatsApp were swapped for web? then it's the renderer's job*); and the
   tool's **returned envelope** (`render`/`memory_note`) drives the next turn, not the prompt. Craft guide:
-  **`craft-flows`**; the built-in + render-intent lists: the **`primitives`** / **`flow-schema`** catalogs.
+  **`craft-flows`**; the built-ins: `primitives/<name>.json`; a render intent's exact fields:
+  `render-intents/<name>.json`; the node grammar: the **`flow-schema`** catalog.
 - **Data — a first-class module, not a database.** Most packs need no DB: declare `xrm.yaml` (records ± a
   stage pipeline; also seeds demo data, optionally with AI images) or `worklist.yaml` (support tickets /
   casework) and get storage + the `record_*` / `case_*` built-ins for free. Craft guide:
@@ -129,7 +153,8 @@ of one per failed deploy. (`octwin test` is an alias for `validate --remote`.)
 ## Step 3 — Deploy + test on your tenant
 
 ```bash
-# one-time: point pack.json at your platform + tenant, then log in with a deploy token
+# one-time: log in with a deploy token — this sets BOTH the platform url and the
+# token (the token carries your tenant), so nothing lands in the pack directory
 #   (Octwin console → your workspace → API tokens → Generate)
 octwin login --url https://your-octwin.example.com --token oct_…
 
@@ -143,7 +168,10 @@ octwin status              # "✓ live and current" once it's warm
 idempotent and **reuses** already-generated images (it won't regenerate on every deploy).
 
 Edit and `octwin deploy` again — a redeploy **hot-loads with no restart**; re-run `octwin status`
-to confirm the live version caught up. A deploy is **durable**: the pack is stored server-side and
+to confirm the live version caught up. One caveat while iterating: a redeploy **invalidates every
+suspended flow run** for that pack (run state lives in the process, and the reload rebuilds the
+tools). The next tap on a card rendered before the deploy reports `workflow_resume_stale` and the
+agent improvises an apology — that is the deploy, not your flow. Start the conversation again. A deploy is **durable**: the pack is stored server-side and
 **reloaded automatically when the platform restarts** (it's warmed at boot alongside the built-in packs,
 so the console lists it and it's chattable immediately). You never need to redeploy just because the
 platform bounced.
