@@ -5,10 +5,22 @@ Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
 The platform-wide view lives in the repo root [`CHANGELOG.md`](../../CHANGELOG.md); the companion CLI
 has its own [`packages/octwin-cli/CHANGELOG.md`](../octwin-cli/CHANGELOG.md).
 
-## [Unreleased]
+## [0.1.9] - 2026-07-29
 
 The plugin is now a **single `SKILL.md`** — no `references/` folder. Everything authoritative is pulled
-from the platform KB; the plugin carries only the workflow.
+from the platform KB; the plugin carries only the workflow. (The `references/` removal below shipped
+progressively across 0.1.6–0.1.9, which went out without their own changelog cuts.)
+
+### Changed
+- **SKILL.md Step 0.5 teaches the exploded KB layout.** `octwin platform-kb pull` now writes an
+  `INDEX.md` plus one file per capability (`primitives/record_list.json`,
+  `render-intents/carousel.json`, …) instead of 34 flat catalogs, so the skill instructs the agent to
+  read `INDEX.md` first and open only the entry it needs — never a whole catalog. Render intents get a
+  named warning: each takes a **fixed** field set, the platform rejects anything outside it, and
+  `octwin validate` flags it offline, so read `render-intents/<name>.json` before composing a card.
+- **SKILL.md pack layout lists `commands.yaml`, `locale.ar.yaml`, and `messages.ar.yaml`** — the
+  scaffold ships them, and the skill's "the layout IS the contract" file map had omitted all three.
+- **`pack.json` is gone from the skill's workflow** — the saved `octwin login` is the deploy target.
 
 ### Removed
 - **The entire `skills/octwin-pack/references/` folder.**
