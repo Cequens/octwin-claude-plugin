@@ -69,6 +69,12 @@ only goes stale):
 octwin platform-kb pull        # → .octwin/platform-kb/  (INDEX.md + markdown docs + per-entry catalogs)
 ```
 
+**Pull ONCE, at your repo root.** `octwin validate` walks UP from the pack directory to find the
+reference, so one pull at the root of a monorepo covers every pack under it. (It used to look only
+in the pack directory itself, so a root pull enabled nothing and `validate` printed a ✓ with two of
+its three checks silently switched off. If a check cannot run, the run now says so on its last line;
+`--require-kb` makes that a failure for CI.)
+
 **Read `INDEX.md` FIRST — then open only the specific file you need.** The pull writes a map plus one file
 per capability, so a lookup is a small targeted read, never a whole catalog:
 
@@ -122,7 +128,7 @@ Four decisions, each with its authoritative guide in the pulled KB (`.octwin/pla
   tool's **returned envelope** (`render`/`memory_note`) drives the next turn, not the prompt. Craft guide:
   **`craft-flows`**; the built-ins: `primitives/<name>.json`; a render intent's exact fields:
   `render-intents/<name>.json`; the node grammar: the **`flow-schema`** catalog.
-- **Data — a first-class module, not a database.** Most packs need no DB: declare `xrm.yaml` (records ± a
+- **Data — a first-class module, not a database.** A pack has no database of its own: declare `xrm.yaml` (records ± a
   stage pipeline; also seeds demo data, optionally with AI images) or `worklist.yaml` (support tickets /
   casework) and get storage + the `record_*` / `case_*` built-ins for free. Craft guide:
   **`craft-data-render`** (+ the `xrm-guide` / `casework-guide` reference docs).
@@ -158,6 +164,7 @@ of one per failed deploy. (`octwin test` is an alias for `validate --remote`.)
 #   (Octwin console → your workspace → API tokens → Generate)
 octwin login --url https://your-octwin.example.com --token oct_…
 
+octwin projects            # which --project <slug> values this token can name (add --project below if unpinned)
 octwin deploy --seed       # --seed also loads any demo data your xrm.yaml declares
 octwin status              # "✓ live and current" once it's warm
 # → chat with it on your tenant (web widget / console test page)
@@ -168,7 +175,9 @@ octwin status              # "✓ live and current" once it's warm
 idempotent and **reuses** already-generated images (it won't regenerate on every deploy).
 
 Edit and `octwin deploy` again — a redeploy **hot-loads with no restart**; re-run `octwin status`
-to confirm the live version caught up. One caveat while iterating: a redeploy **invalidates every
+to confirm the live version caught up. `status` also tells you whether the pack can actually RECEIVE
+a message on that project: one pack per project, oldest active install wins, so a second install
+reports `✗ installed, but project '<slug>' dispatches to '<other>'` rather than looking healthy. One caveat while iterating: a redeploy **invalidates every
 suspended flow run** for that pack (run state lives in the process, and the reload rebuilds the
 tools). The next tap on a card rendered before the deploy reports `workflow_resume_stale` and the
 agent improvises an apology — that is the deploy, not your flow. Start the conversation again. A deploy is **durable**: the pack is stored server-side and
@@ -229,8 +238,11 @@ passed, every doc that was wrong, every hour lost is a fixable gap; a precise re
 
 **Write it to `FEEDBACK.md` in your pack directory** (the folder you're authoring in). Report only what you
 actually hit — never invent friction. Cite the exact error text and the file/flow that triggered it. Group
-each finding by the owner that can fix it. (An automatic `octwin feedback` submit path isn't wired yet — hand
-`FEEDBACK.md` to the platform team.) Use this structure, deleting any owner section you have no findings for:
+each finding by the owner that can fix it. Then **submit it with `octwin feedback`** (needs `octwin-cli >= 0.2.0`
+and the `pack:deploy` scope) — it reads `FEEDBACK.md` from the pack directory and attaches the pack version,
+your CLI version and the `content_hash` of the reference you pulled, which is what lets triage tell a real
+platform gap from something already fixed or a stale KB. Use this structure, deleting any owner section you
+have no findings for:
 
 ```markdown
 ## Octwin pack authoring feedback
