@@ -12,9 +12,10 @@ You build it in your own repo and deploy it to a running Octwin platform with th
 
 This skill takes you from nothing to a deployed, chattable pack. Two rules frame everything:
 
-- **Pure declarative data only.** A pack is `.yaml` / `.md` / `.sql` / `.json` — **no `.ts`/`.js`,
-  no custom code, no primitives**. Flows are composed from the platform's **built-in** steps. This
-  is what lets the platform safely run your pack; the server rejects any code on deploy.
+- **Pure declarative data only.** A pack is `.yaml` / `.md` / `.json` — **no `.ts`/`.js`, no
+  `.sql`, no custom code, no primitives**. Flows are composed from the platform's **built-in**
+  steps, and your data model is declared in `xrm.yaml` (a pack owns no database). This is what
+  lets the platform safely run your pack; the server rejects any code, and any SQL, on deploy.
 - **Scaffold, then customize.** Never hand-write pack boilerplate from memory — start from
   `octwin init` and edit. The scaffold is a real, valid, chattable hello-bot.
 
@@ -155,6 +156,13 @@ octwin validate --remote   # + the platform's FULL manifest + flow-DSL check —
 **`octwin validate --remote`** to run the *exact* validation `deploy` runs (manifest `.strict()` + every flow's
 schema/expression/structure) and get **every** error in one pass — so you fix them all before deploying instead
 of one per failed deploy. (`octwin test` is an alias for `validate --remote`.)
+
+`--remote` targets a **project**, exactly like `deploy` — deliberately, so a pre-flight cannot pass
+where the real thing would fail. The checks themselves are project-blind; it is the endpoint that
+resolves your tenant and project first. A project-pinned token supplies it, so most authors pass
+nothing; an unpinned one needs `--project <slug>` (see `octwin projects` in Step 3) or it answers
+`project required`. A wrong slug answers `project '<slug>' not found under tenant` — that is the
+flag, not your pack.
 
 ## Step 3 — Deploy + test on your tenant
 

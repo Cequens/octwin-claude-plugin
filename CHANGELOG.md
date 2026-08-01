@@ -5,6 +5,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
 The platform-wide view lives in the repo root [`CHANGELOG.md`](../../CHANGELOG.md); the companion CLI
 has its own [`packages/octwin-cli/CHANGELOG.md`](../octwin-cli/CHANGELOG.md).
 
+## [0.1.11] - 2026-08-01
+
+### Changed
+- **Step 2 says that `validate --remote` targets a project.** The skill introduced `--project` and
+  `octwin projects` only in Step 3 (deploy), so an author with an unpinned token met
+  `project required` at Step 2 having never been told the flag existed — the endpoint resolves tenant
+  and project **before** validating, so `validate --project <typo>` fails wherever `deploy --project
+  <typo>` would. Step 2 now states that, notes the checks themselves are project-blind, and names
+  both failure messages so a flag problem is not mistaken for a pack problem.
+
 ## [0.1.9] - 2026-07-29
 
 The plugin is now a **single `SKILL.md`** — no `references/` folder. Everything authoritative is pulled
