@@ -42,7 +42,7 @@ skills/octwin-pack/
 The skill is a single `SKILL.md`: the init → pull → author → validate → deploy → feedback workflow, with
 the FEEDBACK.md template inlined. Everything authoritative — what the platform supports (built-in `do:`
 primitives, expression builtins, render intents, the flow-DSL) **and** the pack-authoring craft guides
-(`craft-manifest` / `craft-flows` / `craft-data-render` / `craft-ux` / `craft-capabilities`) — lives in the
+(`craft-manifest` / `craft-flows` / `craft-data-render` / `craft-ux` / `craft-testing` / `craft-capabilities`) — lives in the
 **platform KB** and is read from `.octwin/platform-kb/` after `octwin platform-kb pull`, pulled live from
 the author's own platform so it always matches that platform's version. The plugin ships **no bundled
 snapshot** (a committed copy only drifts); the CLI instead nudges the author to re-pull when the platform's

@@ -5,292 +5,168 @@ description: Author a pure-YAML Octwin pack — a WhatsApp/web conversational bo
 
 # Authoring an Octwin pack (pure-YAML)
 
-An **Octwin pack** is a self-contained conversational bot for WhatsApp + web — its agent,
-its conversation **flows**, its prompts, and its data model — declared **entirely in YAML**.
-You build it in your own repo and deploy it to a running Octwin platform with the
+An **Octwin pack** is a self-contained conversational bot for WhatsApp + web — its agent, its
+conversation **flows**, its prompts, and its data model — declared **entirely in YAML**. You build it
+in your own repo and deploy it to a running Octwin platform with the
 [`octwin`](https://www.npmjs.com/package/octwin-cli) CLI; the platform runs it on your tenant.
 
-This skill takes you from nothing to a deployed, chattable pack. Two rules frame everything:
+**This skill is the workflow, not the reference.** It takes you from nothing to a deployed, chattable
+pack and names *which guide answers each decision*. Every capability, field, schema, example and
+gotcha lives in the **platform KB**, pulled from your own platform in Step 0.5 — it has to match that
+platform's exact version, and anything copied into this file would silently go stale.
 
-- **Pure declarative data only.** A pack is `.yaml` / `.md` / `.json` — **no `.ts`/`.js`, no
-  `.sql`, no custom code, no primitives**. Flows are composed from the platform's **built-in**
-  steps, and your data model is declared in `xrm.yaml` (a pack owns no database). This is what
-  lets the platform safely run your pack; the server rejects any code, and any SQL, on deploy.
+Two rules frame everything:
+
+- **Pure declarative data only.** A pack is `.yaml` / `.md` / `.json` plus pictures — **no `.ts`/`.js`,
+  no `.sql`, no custom code, no custom primitives**. Flows compose the platform's **built-in** steps;
+  your data model is declared in `xrm.yaml` (a pack owns no database). This is what lets the platform
+  safely run your pack, and the server enforces it on every deploy.
 - **Scaffold, then customize.** Never hand-write pack boilerplate from memory — start from
   `octwin init` and edit. The scaffold is a real, valid, chattable hello-bot.
 
-## Step 0 — Install the CLI, scaffold, read what you got
-
-Install the CLI **once** — a fast, stable `octwin` command that also nudges you when a newer version ships:
+## Step 0 — Install the CLI and scaffold
 
 ```bash
-npm i -g octwin-cli        # install once; then use `octwin <cmd>` everywhere below
+npm i -g octwin-cli        # install once; then `octwin <cmd>` everywhere below
 octwin --version           # confirm it's on the current release
 # No-install fallback (CI, or can't install globally): npx octwin-cli@latest <cmd>
-```
 
-Scaffold a pack and read it:
-
-```bash
 octwin init ./my-pack --id my-pack --description "What the bot does"
 cd ./my-pack
 ```
 
-This writes a minimal, valid, chattable pack that already models the **home-hub** shape (Step 1). **Read every
-file** before editing — the layout IS the contract:
+This writes a minimal, valid, chattable pack that already models the **home-hub** shape. **Read every
+file before editing — the layout IS the contract**, and the scaffold answers most "where does this
+go?" questions before you have to ask them. The directory is pack content only; your deploy target
+lives in your saved login (Step 3), never in a file here.
 
-```
-manifest.yaml                       # the whole pack is declared here (id, agent, flows, channels)
-commands.yaml                       # slash/keyword commands that jump straight to a flow
-locale.ar.yaml                      # pack-wide strings (per-flow strings live beside each flow)
-messages.ar.yaml                    # platform-emitted message overrides (errors, fallbacks)
-flows/tools/home.flow.yaml          # the MENU HUB — your front door (a list_picker; see the craft-ux guide)
-flows/tools/home.locale.ar.yaml     # the hub's user-visible strings, keyed (referenced via $t)
-flows/tools/browse.flow.yaml        # an example tool the hub invokes — replace with your real capability
-flows/tools/browse.locale.ar.yaml   #   (+ its strings)
-prompts/identity.md                 # the agent's system prompt (who it is, when to call tools)
-```
+## Step 0.5 — Pull the capability reference
 
-Nothing else — the directory is pack content only. The deploy target lives in your saved login
-(`octwin login`, Step 3), not in a file here.
-
-## Step 0.5 — Pull the capability reference (the source of truth, not this skill's prose)
-
-Everything the platform supports — every built-in `do:` primitive, every expression builtin (`$…`), every
-`render_intent`, the full flow-DSL schema, **the declaration schemas for what you write** (`manifest.yaml`,
-`xrm.yaml`, `worklist.yaml`/casework, `scheduling.yaml`, …), **the platform's built-in system entities**
-(`product`/`cart`/`order`/`case`/`booking`/`survey_response`/`campaign` — RESERVED keys: extend one
-with `extends: system`, never declare it as your own), the module authoring docs, **and the pack-authoring craft
-guides** — is **not** in this skill. It lives in the **platform KB**, which you **pull straight from YOUR
-platform** so it always matches that platform's exact version (this skill ships no bundled copy — a snapshot
-only goes stale):
+**Do this before you author anything.** Everything the platform supports — every built-in `do:` step,
+every `$…` expression function, every render intent, the schema of every file you write, the built-in
+entities you get free, the module guides, and the pack-authoring **craft guides** — is in the KB, not
+in this skill:
 
 ```bash
-# one-time: `octwin login --url <your platform> --token oct_…` (see Step 3), then:
-octwin platform-kb pull        # → .octwin/platform-kb/  (INDEX.md + markdown docs + per-entry catalogs)
+octwin platform-kb pull --if-stale --url https://your-octwin.example.com   # → .octwin/platform-kb/
 ```
 
-**Pull ONCE, at your repo root.** `octwin validate` walks UP from the pack directory to find the
-reference, so one pull at the root of a monorepo covers every pack under it. (It used to look only
-in the pack directory itself, so a root pull enabled nothing and `validate` printed a ✓ with two of
-its three checks silently switched off. If a check cannot run, the run now says so on its last line;
-`--require-kb` makes that a failure for CI.)
+**No token needed** — the reference is platform stdlib and is served anonymously, so this works on a
+fresh clone before you have logged in. **Run it at the start of every session:** `--if-stale` checks
+the platform's content hash first and does nothing when your copy is current, so it costs one small
+request. **Pull at your repo ROOT** — `octwin validate` walks *up* from the pack directory, so one
+pull covers every pack in a monorepo. Six of `validate`'s checks are driven by this reference and
+**skip without it** (the run says so on its last line; `--require-kb` makes that a failure for CI).
 
-**Read `INDEX.md` FIRST — then open only the specific file you need.** The pull writes a map plus one file
-per capability, so a lookup is a small targeted read, never a whole catalog:
+The pull writes three maps beside the reference. Reach for the one that matches what you have:
 
-```
-.octwin/platform-kb/
-  INDEX.md                        # the map: every doc + every capability, one line each, with its path
-  craft-*.md, dsl.md, runtime.md  # the guides + reference docs
-  primitives/record_list.json     # one file per built-in `do:` primitive
-  render-intents/carousel.json    # one file per render intent — its EXACT fields
-  builtins/map.json               # one file per `$…` expression function, with examples
-  declarations/xrm.json           # one file per declaration file you write (manifest, xrm, worklist, …)
-  system-entities/order.json      # the built-in entities every pack gets free
-```
+| You have | Open |
+|---|---|
+| a question (*"how do I take a deposit?"*) | **`INDEX.md`** — pick the guide, then read it |
+| **a name** (`record_list`, `active_only`, `$coalesce`, `collect:`, a key from an error) | **`SYMBOLS.md`** — grep it; every name maps to its exact file |
+| a heavy doc and one subject inside it | **`OUTLINE.md`** — every heading with its line number; read from there |
 
-Never read a whole catalog to find one entry — that is what `INDEX.md` is for. **Pull it before you
-author** and consult it as you go: start with `craft-capabilities` (orientation), then `craft-ux`,
-`craft-flows`, `craft-manifest`, `craft-data-render`, and open the per-entry JSON for exact fields. The CLI
-**watches it for drift**: after any command that talks to the platform, it prints a one-line nudge to re-run
-`octwin platform-kb pull` whenever the platform's reference has changed since your last pull — so your copy
-never silently goes stale.
+Read `INDEX.md` first, then **`craft-capabilities`**, which explains how the reference fits together
+and which guide answers what. Never read a whole catalog to find one entry.
 
-**Consult it whenever you need to know whether a step / function / render-intent exists or its exact
-fields.** **Never invent a built-in from memory or copy a list out of this skill's prose** — the outline
-below is a map, not the reference; the KB is authoritative. Render intents are the sharpest case: each one
-takes a **fixed** field set (a `carousel` card has `image_url`/`body`/`buttons` and no `title`), the platform
-**rejects** a field outside it, and `octwin validate` flags it offline — so read `render-intents/<name>.json`
-before composing a card rather than guessing from another intent's shape.
+**If it isn't in the KB, it doesn't exist for a pure-YAML pack.** Never invent a built-in, a field or
+a render-intent key from memory, and never infer one intent's fields from another's — the platform
+rejects unknown keys and `octwin validate` flags them offline. The CLI nudges you (on stderr, even
+when output is piped) whenever the platform's reference changes, so your copy never goes quietly
+stale; `octwin platform-kb --check` reports the same thing as an exit code (0 current, 2 stale).
 
 ## Step 1 — Author the domain
 
-> **Build a product, not a bag of tools.** A pack is a **guided product with a front door**. Three patterns
-> make it one — every reference pack uses all three, and `octwin init` scaffolds them: a **home hub** (the
-> menu the agent opens on a greeting / unclear message, wired FIRST in `flows` + the agent's `tools`),
-> **rich interaction** (icons + a `carousel` for photo lists), and a **confirmation before any committing
-> action** (the `approve_apply` preview → ✅/❌). How to build each well — with real YAML — is the
-> **`craft-ux` guide** in the pulled KB; read it before you build the flows.
+> **Build a product, not a bag of tools.** A pack is a **guided product with a front door**. Three
+> patterns make it one — every reference pack uses all three, and `octwin init` scaffolds them: a
+> **home hub** (the menu the agent opens on a greeting / unclear message, wired FIRST in `flows` + the
+> agent's `tools`), **rich interaction** (icons + a `carousel` for photo lists), and a
+> **confirmation before any committing action**. Read **`craft-ux`** before you build the flows.
 
-Four decisions, each with its authoritative guide in the pulled KB (`.octwin/platform-kb/`, Step 0.5):
+Each decision has one authoritative guide in the pulled KB (`.octwin/platform-kb/`). Read the guide
+rather than guessing from here — that is the whole point of pulling it:
 
-- **Manifest (`manifest.yaml`)** — declares the whole pack (`id`, a **string** `version` — `'1.0.0'`, not a
-  bare `1`; `description`, `supported_channels`, `required_adapters`, `default_settings.locale`, `flows`,
-  `agents`; optional record modules via a sibling `xrm.yaml`/`worklist.yaml`). It is **strict** — unknown keys
-  are rejected on deploy. Craft guide: **`craft-manifest`**; the exact schema of every declaration file: the
-  **`declarations`** catalog.
-- **Flows (`flows/tools/<flow>.flow.yaml` + `<flow>.locale.<lang>.yaml`)** — each agent-callable capability is
-  a flow: `input:` (the tool's schema) → `entry:` (routing) → `steps:` (nodes). A `do:` calls a platform
-  **built-in**; a `render:` node composes the UI. Three hard rules: all user-visible copy lives in the locale
-  file (`$t("<flow>.<key>")`, **namespaced** — a bare/missing key fails validation); the **renderer owns
-  channel limits** (never `.slice()`/clamp/page/read a cap in YAML — return all the data + one render intent;
-  litmus: *would the value change if WhatsApp were swapped for web? then it's the renderer's job*); and the
-  tool's **returned envelope** (`render`/`memory_note`) drives the next turn, not the prompt. Craft guide:
-  **`craft-flows`**; the built-ins: `primitives/<name>.json`; a render intent's exact fields:
-  `render-intents/<name>.json`; the node grammar: the **`flow-schema`** catalog.
-- **Data — a first-class module, not a database.** A pack has no database of its own: declare `xrm.yaml` (records ± a
-  stage pipeline; also seeds demo data, optionally with AI images) or `worklist.yaml` (support tickets /
-  casework) and get storage + the `record_*` / `case_*` built-ins for free. Craft guide:
-  **`craft-data-render`** (+ the `xrm-guide` / `casework-guide` reference docs).
-- **Images (optional, octwin-cli ≥ 0.1.16)** — "pure-YAML" bars *code*, not *pictures*. Commit
-  `.jpg/.jpeg/.png/.webp/.gif/.pdf` (≤ 2 MB each, ≤ 32 MB per pack; **no SVG** — script-capable) next
-  to your YAML, declare each under `static_assets: [{ file, key }]` in the manifest, and reference it
-  as `$pack_asset:<key>` from a flow's `config:` — the platform uploads it to the media system at
-  install and the sentinel resolves to the served URL. This is how you ship a brand mark, or the
-  placeholder a `carousel` falls back to when a record has no photo. (Demo *record* images are a
-  different thing — `xrm.yaml` seeds those with AI at `deploy --seed`.)
-- **Agent (`prompts/identity.md` + `manifest.agents[]`)** — expresses **domain intent** and calls flow-tools;
-  stays channel-agnostic (the tool decides the channel UI). The prompt says *when* to call a tool; the
-  envelope controls *what happens next*. Lead titles/headers/buttons with an emoji (in the locale string, not
-  the YAML). Keep it brief.
+| Decide | Read |
+|---|---|
+| **The manifest** — what the pack declares, plus the sibling files that unlock first-class modules. It is **strict**: unknown keys are rejected on deploy | `craft-manifest` |
+| **The flows** — each agent-callable capability: `input:` → `entry:` → `steps:`, `do:` steps and `render:` nodes | `craft-flows` |
+| **The data** — `xrm.yaml` records (or `worklist.yaml` for support tickets / casework). A pack has no database of its own; declaring the file is what buys the storage and the built-in steps | `craft-data-render` |
+| **The result states** — a fetch returns nothing, exactly one row, or more than the screen holds, and the customer meets all three. A pack authored against the middle case meets the other two as accidents | `craft-result-states` |
+| **The consequences** — a record also moves when an operator, a webhook or a sweep touches it, and a follow-up written as a flow step runs for none of those | `craft-reactions` |
+| **The agent** — `prompts/identity.md` + `manifest.agents[]`: the one part of the pack that improvises, and the only one `validate` cannot check | `craft-agent` |
+| **The outreach** — the message you send when nobody is typing. WhatsApp will not deliver it unless the customer messaged you in the last 24 hours | `craft-outreach` |
+| **The exit** — what happens when the bot can't help. Escalation is *mediated*: nobody joins the chat, and the disposition a human picks becomes the words the customer reads | `craft-escalation` |
+| **Bookings** (if the business takes appointments) — the flow around the slot engine, and why reminders are the part that ships silently broken | `craft-booking` |
+| **Selling** (if the business sells products) — catalog → search → cart, and the SKU-vs-record-id trap in `cart_add` | `craft-commerce` |
+| **Another system** (if the business already runs one) — the operator supplies endpoint and credential, and `inbound:` webhooks land in your records with no flow | `craft-integrations` |
+| **One message to a crowd** (if the business does outbound campaigns) — `matched` counts records, `enqueued` counts contacts, and neither is `delivered` | `craft-campaigns` |
+| **The judgement layer** — the four roles (agent / flow / primitive / renderer) and which one owns what | `craft-principles` |
+
+The agent expresses **domain intent** and calls flow-tools; it stays channel-agnostic, because the tool
+decides the channel UI. The prompt says *when* to call a tool; the tool's returned envelope controls what
+happens next. Keep it brief.
 
 ## Step 2 — Validate
 
 ```bash
-octwin validate            # structure + pure-YAML rules, offline (fast, no server)
-octwin validate --remote   # + the platform's FULL manifest + flow-DSL check — ALL errors at once
+octwin validate            # offline: structure, the pure-YAML rules, + 6 checks driven by the pulled KB
+octwin validate --remote   # the platform's FULL check — every error in ONE pass
 ```
 
-`octwin validate` is an offline structural pre-check. Once you've `octwin login`'d, run
-**`octwin validate --remote`** to run the *exact* validation `deploy` runs (manifest `.strict()` + every flow's
-schema/expression/structure) and get **every** error in one pass — so you fix them all before deploying instead
-of one per failed deploy. (`octwin test` is an alias for `validate --remote`.)
+Run **both**, in that order. The offline run replays the platform's own contracts from the reference
+you pulled in Step 0.5 — render-intent fields, primitive arguments, `$function()` names, `use:`
+template params, reserved entity keys, and the declaration files' schemas — with no server and no
+token. Add `--require-kb` in CI so a missing reference fails the build instead of quietly skipping
+six checks. `--remote` runs the *exact* validation `deploy` runs, so it turns eight
+fix-one-error-and-redeploy cycles into one. (`octwin test` is an alias for it.) What its
+project-resolution errors mean: **`craft-testing`**.
 
-`--remote` targets a **project**, exactly like `deploy` — deliberately, so a pre-flight cannot pass
-where the real thing would fail. The checks themselves are project-blind; it is the endpoint that
-resolves your tenant and project first. A project-pinned token supplies it, so most authors pass
-nothing; an unpinned one needs `--project <slug>` (see `octwin projects` in Step 3) or it answers
-`project required`. A wrong slug answers `project '<slug>' not found under tenant` — that is the
-flag, not your pack.
-
-## Step 3 — Deploy + test on your tenant
+## Step 3 — Deploy and drive it
 
 ```bash
-# one-time: log in with a deploy token — this sets BOTH the platform url and the
-# token (the token carries your tenant), so nothing lands in the pack directory
-#   (Octwin console → your workspace → API tokens → Generate)
+# one-time (console → your workspace → API tokens → Generate):
 octwin login --url https://your-octwin.example.com --token oct_…
 
-octwin projects            # which --project <slug> values this token can name (add --project below if unpinned)
-octwin deploy --seed       # --seed also loads any demo data your xrm.yaml declares
+octwin projects            # the --project slugs this token can name
+octwin deploy --seed       # --seed also loads the demo data xrm.yaml declares
 octwin status              # "✓ live and current" once it's warm
-# → chat with it on your tenant (web widget / console test page)
 ```
 
-`deploy --seed` streams **live progress** — a line per demo record and per AI image as they're created
-(image generation is the slow part), then a `Seeded: N record(s), M image(s)…` summary. Re-seeding is
-idempotent and **reuses** already-generated images (it won't regenerate on every deploy).
+Then drive it from the terminal — `octwin chat` prints every render **with its tap id**, so you can
+press buttons headlessly, and `octwin logs <conversationId>` shows the full turn timeline.
 
-Edit and `octwin deploy` again — a redeploy **hot-loads with no restart**; re-run `octwin status`
-to confirm the live version caught up. `status` also tells you whether the pack can actually RECEIVE
-a message on that project: one pack per project, oldest active install wins, so a second install
-reports `✗ installed, but project '<slug>' dispatches to '<other>'` rather than looking healthy. One caveat while iterating: a redeploy **invalidates every
-suspended flow run** for that pack (run state lives in the process, and the reload rebuilds the
-tools). The next tap on a card rendered before the deploy reports `workflow_resume_stale` and the
-agent improvises an apology — that is the deploy, not your flow. Start the conversation again. A deploy is **durable**: the pack is stored server-side and
-**reloaded automatically when the platform restarts** (it's warmed at boot alongside the built-in packs,
-so the console lists it and it's chattable immediately). You never need to redeploy just because the
-platform bounced.
+**For a multi-step conversation use `octwin chat --script <file>`, never chained `chat` calls** —
+chaining races the agent loop and produces a timing bug that reads as a flow bug. That, the read-back
+commands (`records` / `orders` / `analytics` / `agents --prompt` / `scheduling --slots`), the two
+things that look like a broken pack and are not (a second install on a project that already
+dispatches elsewhere; a redeploy invalidating every **suspended** run), and disposable test projects:
+**`craft-testing`**.
 
-### Debugging a live conversation from the CLI (octwin-cli ≥ 0.1.9)
+Before you call it done, make the pre-ship pass at the end of **`craft-testing`** — a dozen defects
+that pass every gate, deploy cleanly, and are visible only to the customer. `validate` cannot see any
+of them.
 
-The platform keeps **one open conversation per `--as` handle**, so consecutive `octwin chat` calls
-with the same handle **continue the same conversation** — agent memory, suspended flows, taps and all.
-Renders print in full (every list row / button / carousel card **with its tap id**), so you can drive
-any tap-routed flow headlessly:
+## Step 4 — Report what you learned
 
-```bash
-octwin chat "hi" --as t1                       # turn 1 — menu prints with each row's tap id
-octwin chat --tap "t:invoke:my-flow:x=1" --as t1   # turn 2 — press a rendered row/button
-octwin chat "free text answer" --as t1         # turn 3 — typed reply into the running flow
-octwin logs --as t1                            # find the conversation (handle + last activity)
-octwin logs <conversationId>                   # full timeline: taps, tool events, AND each turn's renders
-octwin cases                                   # casework packs: the ticket inbox; `octwin cases <id>` = timeline
-```
-
-`--json` on `chat`/`logs`/`cases` dumps raw envelopes/events when you need exact payloads. `octwin
-records <entity>` inspects XRM data (cases/tickets are casework — that's `octwin cases`, not `records`).
-
-### Reading back what your pack produced (octwin-cli ≥ 0.1.15)
-
-`chat`/`logs` show the conversation; these show the **state it created**. Each needs the matching token
-scope — a 401/403 names which one, so mint a wider token in the console rather than guessing:
-
-```bash
-octwin agents                                  # roster + each agent's EFFECTIVE model and which layer set it
-octwin agents my-pack::assistant --prompt      # the exact system prompt the LLM sees for this project
-octwin orders                                  # orders a checkout produced; `octwin orders <reference_id>` = money + payment state
-octwin analytics                               # entities with a pipeline; `octwin analytics <entity>` = stage conversion
-octwin catalog                                 # commerce products + stock + the WhatsApp catalog binding
-octwin scheduling --slots <resourceRecordId>   # the slots your availability rules actually compute
-```
-
-Three traps these exist to answer:
-
-- **"My declared model isn't being used."** An operator **platform default** can override the pack
-  manifest's `default_model` (and the history window / working memory). `octwin agents <id>` prints the
-  effective value, which layer won, and warns explicitly when your pack's value is not in force.
-- **"The order says `pending` — is checkout broken?"** Usually no. The forward payment lifecycle is
-  **webhook-owned**, and a workspace with no gateway runs the gateway-less `manual` driver, so
-  `payment_request` takes its **`empty`** port and the flow should confirm pay-on-delivery. `octwin orders
-  <ref>` says this inline.
-- **"Where did my funnel go?"** Any entity declared with a `pipeline:` gets stage conversion for free —
-  but a 200 with no data means either no `pipeline:` **or** no `view` grant on `record.<entity>`.
-
-## Step 4 — Report your authoring experience (optional, encouraged)
-
-Once you reach ✓ live — especially if it took several tries — turn what you learned into a **structured
-feedback report** for the Octwin platform team. Every deploy that failed on something the local tooling
-passed, every doc that was wrong, every hour lost is a fixable gap; a precise report is how it gets fixed.
-
-**Write it to `FEEDBACK.md` in your pack directory** (the folder you're authoring in). Report only what you
-actually hit — never invent friction. Cite the exact error text and the file/flow that triggered it. Group
-each finding by the owner that can fix it. Then **submit it with `octwin feedback`** (needs `octwin-cli >= 0.2.0`
-and the `pack:deploy` scope) — it reads `FEEDBACK.md` from the pack directory and attaches the pack version,
-your CLI version and the `content_hash` of the reference you pulled, which is what lets triage tell a real
-platform gap from something already fixed or a stale KB. Use this structure, deleting any owner section you
-have no findings for:
-
-```markdown
-## Octwin pack authoring feedback
-
-- **Pack:** <id>@<version> — <one line: what the bot does>
-- **Scope built:** <flows / modules, e.g. "7 flows; xrm + scheduling + casework; bilingual; media">
-- **Platform:** <platform_url> · KB content_hash <from .octwin/platform-kb/index.json>
-- **Deploy attempts to reach ✓ live:** <n> — <were the failures one-error-at-a-time?>
-
-### A · CLI (octwin-cli)          # the local tool: validate / deploy / status behaviour, output, config
-- **Finding:** <short title>
-  - **Error / behaviour:** <exact message or what happened>
-  - **Impact:** <what it cost — time, a false ✓, a silent failure>
-  - **Fix:** <the concrete change you'd want>
-
-### B · Platform                  # the server rejected what the CLI accepted, or a feature didn't load
-- **Finding:** <short title>
-  - **Error / behaviour:** <exact message — include the file/flow/field that triggered it>
-  - **Local vs deploy:** <did `octwin validate` pass but the deploy reject? that gap is the finding>
-  - **Fix:** <schema tweak, missing template, RBAC grant, …>
-
-### C · Skill / KB                # the authoring guidance or capability reference was wrong/incomplete/opaque
-- **Finding:** <short title>
-  - **Gap:** <what the guidance/KB said vs. what was true, or what it didn't say at all>
-  - **Fix:** <the doc/KB change — a value to surface, a shape to document, a sugar to version-gate>
-
-### What went well                # genuinely — what saved time (scaffold, pulled KB, hot-reload, ports, pure-YAML)
-- <...>
-
-### Top asks (prioritized)        # the 3–5 changes that'd most help the next author, most-impactful first
-1. <owner> — <the ask> — <why it's #1>
-```
+Once you reach ✓ live — especially if it took several tries — write `FEEDBACK.md` in your pack
+directory and send it with **`octwin feedback`**. Report only what you actually hit, cite the exact
+error text, and group each finding by the owner who can fix it. The template and the reporting rules:
+**`craft-feedback`**.
 
 ## Guardrails
 
-- **No code.** `.ts`/`.js`, `routes/`, DB clients, and `*.primitives.*` are rejected on deploy. If a
+- **No code.** `.ts`/`.js`, `routes/`, DB clients and `*.primitives.*` are rejected on deploy. If a
   flow seems to need custom logic, express it with built-in steps + the expression grammar, or model
-  the data with `xrm.yaml`. (Custom primitives are a platform-internal capability, not an external one.)
-- **Don't invent structure** — scaffold with `octwin init` and edit. When unsure of a field, check the
-  pulled KB rather than guessing; the manifest is strict and rejects unknown keys.
-- **Locale everything.** A bare or missing `$t` key fails validation.
-- **Renderer owns caps/paging/splitting.** Never read a channel limit in your YAML.
+  it as data. A genuine gap in the grammar is a **platform** gap — report it (Step 4) rather than
+  looking for a bypass, because there isn't one.
+- **Resolve every platform name through `SYMBOLS.md` before you write it.** A `do:` step, an `args:`
+  key, a `$function()`, a render-intent field, a node op-key, a key in a declaration file — grep the
+  name, open the file the row points at, write what it says. This is the procedure behind "if it
+  isn't in the KB it doesn't exist": a name absent from that table does not exist, and the reason to
+  grep rather than recall is that an invented name reads exactly like a real one.
+- **Don't invent structure.** Scaffold with `octwin init`; check the pulled KB rather than guessing.
+- **Locale everything.** All user-visible copy lives in the locale file; a bare or missing `$t` key
+  fails validation.
+- **The renderer owns caps, paging and splitting.** Never clamp, slice or read a channel limit in your
+  YAML. Litmus: *would this value change if WhatsApp were swapped for web?* Then it isn't yours.
 - **Version is a string.** `version: '1.0.0'` — a bare `1` is a number and fails.

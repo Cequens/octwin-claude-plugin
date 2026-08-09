@@ -5,6 +5,28 @@ Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
 The platform-wide view lives in the repo root [`CHANGELOG.md`](../../CHANGELOG.md); the companion CLI
 has its own [`packages/octwin-cli/CHANGELOG.md`](../octwin-cli/CHANGELOG.md).
 
+## [0.1.12] - 2026-08-09
+
+### Changed
+- **SKILL.md is now a shell: the workflow plus a map of which KB guide answers each decision.** All
+  reference prose (the scaffold file listing, the KB directory layout, the debugging walkthrough,
+  the four-decision narratives) moved into the platform KB's craft guides, where it versions with
+  the author's own platform; the skill's Step 1 is now a decision table naming the guide per
+  decision (`craft-manifest` / `craft-flows` / `craft-data-render` / `craft-result-states` /
+  `craft-reactions` / `craft-agent` / `craft-outreach` / `craft-escalation` / `craft-booking` /
+  `craft-commerce` / `craft-integrations` / `craft-campaigns` / `craft-testing` /
+  `craft-principles`).
+- **Step 0.5 teaches the anonymous, session-start pull.** The KB is served without a token, so
+  `octwin platform-kb pull --if-stale --url <platform>` works on a fresh clone before login; the
+  skill now says to run it at the start of every session (`--if-stale` no-ops when current) and
+  documents the three lookup maps — `INDEX.md` (a question), `SYMBOLS.md` (a name), `OUTLINE.md`
+  (a heading inside a heavy doc) — plus `octwin platform-kb --check` as the exit-code form.
+- **Testing guidance routes through `craft-testing`.** The inlined chat/logs debugging section is
+  replaced by the hard rules that stay in the skill — use `octwin chat --script <file>` for
+  multi-step conversations (chained `chat` calls race the agent loop), and make the pre-ship pass
+  before calling a pack done — with everything else (read-back commands, the two
+  looks-broken-but-isn't cases, disposable test projects) read from the guide.
+
 ## [0.1.11] - 2026-08-01
 
 ### Changed
