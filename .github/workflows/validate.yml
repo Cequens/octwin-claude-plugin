@@ -1,0 +1,37 @@
+# Runs in the PUBLISHED plugin repo — not in this monorepo.
+#
+# GitHub reads `.github/workflows/` only at a repository ROOT. This file lives under
+# `packages/octwin-claude-plugin/` here, so it is inert in the platform monorepo and
+# activates only once `npm run plugin:publish` mirrors it to the root of
+# Cequens/octwin-claude-plugin. It looks misplaced in a diff; it is not. Do not "fix"
+# its location, and do not hand-add a copy to the plugin repo — the publish script
+# replaces every tracked file there on each run, so a hand-added workflow is deleted.
+#
+# It does not ship to users: the plugin root is `./plugins/octwin`, and Claude Code
+# copies only the plugin directory into the install cache.
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm i -g @anthropic-ai/claude-code
+
+      # Two targets, two different manifests, neither covering the other:
+      #   `.`                 → the MARKETPLACE catalog, and that each entry's `source` resolves
+      #   `./plugins/octwin`  → the PLUGIN manifest
+      #
+      # Neither reads SKILL.md frontmatter. Measured 2026-08-27: an illegal
+      # `argument-hint:` key injected into the skill passed both targets clean. The
+      # spec-field check for the skill therefore lives at the SOURCE, in the platform
+      # monorepo's `check:kb-examples`, not here.
+      - run: claude plugin validate .
+      - run: claude plugin validate ./plugins/octwin

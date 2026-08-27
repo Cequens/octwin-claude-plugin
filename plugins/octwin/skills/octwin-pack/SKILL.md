@@ -1,6 +1,8 @@
 ---
 name: octwin-pack
 description: Author a pure-YAML Octwin pack — a WhatsApp/web conversational bot declared entirely in YAML — and deploy it to your tenant with octwin-cli. Use when the user wants to build, scaffold, or extend an Octwin pack (its agent, conversation flows, and data) for their own business, with no platform checkout and no TypeScript.
+license: MIT
+allowed-tools: Bash(octwin *) PowerShell(octwin *)
 ---
 
 # Authoring an Octwin pack (pure-YAML)
@@ -11,9 +13,11 @@ in your own repo and deploy it to a running Octwin platform with the
 [`octwin`](https://www.npmjs.com/package/octwin-cli) CLI; the platform runs it on your tenant.
 
 **This skill is the workflow, not the reference.** It takes you from nothing to a deployed, chattable
-pack and names *which guide answers each decision*. Every capability, field, schema, example and
-gotcha lives in the **platform KB**, pulled from your own platform in Step 0.5 — it has to match that
-platform's exact version, and anything copied into this file would silently go stale.
+pack. Every capability, field, schema, example and gotcha — and every guide that teaches them — lives
+in the **platform KB**, pulled from your own platform in Step 0.5. It has to match that platform's
+exact version, and anything copied into this file would silently go stale, so this file names no
+guide, no capability and no count. It tells you *when* to read the KB; the KB's own index tells you
+*what* to read.
 
 Two rules frame everything:
 
@@ -55,19 +59,15 @@ octwin platform-kb pull --if-stale --url https://your-octwin.example.com   # →
 fresh clone before you have logged in. **Run it at the start of every session:** `--if-stale` checks
 the platform's content hash first and does nothing when your copy is current, so it costs one small
 request. **Pull at your repo ROOT** — `octwin validate` walks *up* from the pack directory, so one
-pull covers every pack in a monorepo. Six of `validate`'s checks are driven by this reference and
-**skip without it** (the run says so on its last line; `--require-kb` makes that a failure for CI).
+pull covers every pack in a monorepo. A set of `validate`'s checks is driven by this reference and
+**skips without it** — the run says how many on its last line, and `--require-kb` makes that a
+failure for CI.
 
-The pull writes three maps beside the reference. Reach for the one that matches what you have:
-
-| You have | Open |
-|---|---|
-| a question (*"how do I take a deposit?"*) | **`INDEX.md`** — pick the guide, then read it |
-| **a name** (`record_list`, `active_only`, `$coalesce`, `collect:`, a key from an error) | **`SYMBOLS.md`** — grep it; every name maps to its exact file |
-| a heavy doc and one subject inside it | **`OUTLINE.md`** — every heading with its line number; read from there |
-
-Read `INDEX.md` first, then **`craft-capabilities`**, which explains how the reference fits together
-and which guide answers what. Never read a whole catalog to find one entry.
+**Open `INDEX.md` first.** The pull writes its own maps beside the reference, and `INDEX.md` is the
+front door: it names every doc with its size, groups them by family, gives a reading route, and points
+you at the right map for the other two questions — a bare name you need to resolve, or one subject
+inside a heavy doc. Read it before you read anything else, and never read a whole catalog to find one
+entry.
 
 **If it isn't in the KB, it doesn't exist for a pure-YAML pack.** Never invent a built-in, a field or
 a render-intent key from memory, and never infer one intent's fields from another's — the platform
@@ -81,26 +81,18 @@ stale; `octwin platform-kb --check` reports the same thing as an exit code (0 cu
 > patterns make it one — every reference pack uses all three, and `octwin init` scaffolds them: a
 > **home hub** (the menu the agent opens on a greeting / unclear message, wired FIRST in `flows` + the
 > agent's `tools`), **rich interaction** (icons + a `carousel` for photo lists), and a
-> **confirmation before any committing action**. Read **`craft-ux`** before you build the flows.
+> **confirmation before any committing action**. Read the KB's UX guide before you build the flows.
 
-Each decision has one authoritative guide in the pulled KB (`.octwin/platform-kb/`). Read the guide
-rather than guessing from here — that is the whole point of pulling it:
+Every decision you are about to make — what the pack declares, how a flow is written, how records are
+stored and rendered, what happens when a fetch returns nothing or too much, what happens when a record
+moves without a flow touching it, how the agent is instructed, how you reach a customer who isn't
+typing, and what happens when the bot can't help — has **one authoritative guide** in the pulled KB
+(`.octwin/platform-kb/`). Capability-specific ones (bookings, selling, another system, campaigns) sit
+beside them.
 
-| Decide | Read |
-|---|---|
-| **The manifest** — what the pack declares, plus the sibling files that unlock first-class modules. It is **strict**: unknown keys are rejected on deploy | `craft-manifest` |
-| **The flows** — each agent-callable capability: `input:` → `entry:` → `steps:`, `do:` steps and `render:` nodes | `craft-flows` |
-| **The data** — `xrm.yaml` records (or `worklist.yaml` for support tickets / casework). A pack has no database of its own; declaring the file is what buys the storage and the built-in steps | `craft-data-render` |
-| **The result states** — a fetch returns nothing, exactly one row, or more than the screen holds, and the customer meets all three. A pack authored against the middle case meets the other two as accidents | `craft-result-states` |
-| **The consequences** — a record also moves when an operator, a webhook or a sweep touches it, and a follow-up written as a flow step runs for none of those | `craft-reactions` |
-| **The agent** — `prompts/identity.md` + `manifest.agents[]`: the one part of the pack that improvises, and the only one `validate` cannot check | `craft-agent` |
-| **The outreach** — the message you send when nobody is typing. WhatsApp will not deliver it unless the customer messaged you in the last 24 hours | `craft-outreach` |
-| **The exit** — what happens when the bot can't help. Escalation is *mediated*: nobody joins the chat, and the disposition a human picks becomes the words the customer reads | `craft-escalation` |
-| **Bookings** (if the business takes appointments) — the flow around the slot engine, and why reminders are the part that ships silently broken | `craft-booking` |
-| **Selling** (if the business sells products) — catalog → search → cart, and the SKU-vs-record-id trap in `cart_add` | `craft-commerce` |
-| **Another system** (if the business already runs one) — the operator supplies endpoint and credential, and `inbound:` webhooks land in your records with no flow | `craft-integrations` |
-| **One message to a crowd** (if the business does outbound campaigns) — `matched` counts records, `enqueued` counts contacts, and neither is `delivered` | `craft-campaigns` |
-| **The judgement layer** — the four roles (agent / flow / primitive / renderer) and which one owns what | `craft-principles` |
+Read the guide rather than guessing from here — that is the whole point of pulling it. `INDEX.md`
+names them all with a reading route: read the core set in order, then add the guide for each
+capability your business actually needs, and skip the rest. Reading the whole set is not the plan.
 
 The agent expresses **domain intent** and calls flow-tools; it stays channel-agnostic, because the tool
 decides the channel UI. The prompt says *when* to call a tool; the tool's returned envelope controls what
@@ -109,7 +101,7 @@ happens next. Keep it brief.
 ## Step 2 — Validate
 
 ```bash
-octwin validate            # offline: structure, the pure-YAML rules, + 6 checks driven by the pulled KB
+octwin validate            # offline: structure, the pure-YAML rules, + the checks driven by the pulled KB
 octwin validate --remote   # the platform's FULL check — every error in ONE pass
 ```
 
@@ -117,9 +109,9 @@ Run **both**, in that order. The offline run replays the platform's own contract
 you pulled in Step 0.5 — render-intent fields, primitive arguments, `$function()` names, `use:`
 template params, reserved entity keys, and the declaration files' schemas — with no server and no
 token. Add `--require-kb` in CI so a missing reference fails the build instead of quietly skipping
-six checks. `--remote` runs the *exact* validation `deploy` runs, so it turns eight
+those checks. `--remote` runs the *exact* validation `deploy` runs, so it turns eight
 fix-one-error-and-redeploy cycles into one. (`octwin test` is an alias for it.) What its
-project-resolution errors mean: **`craft-testing`**.
+project-resolution errors mean is in the KB — `INDEX.md`'s symptom table routes you to the guide.
 
 ## Step 3 — Deploy and drive it
 
@@ -139,19 +131,27 @@ press buttons headlessly, and `octwin logs <conversationId>` shows the full turn
 chaining races the agent loop and produces a timing bug that reads as a flow bug. That, the read-back
 commands (`records` / `orders` / `analytics` / `agents --prompt` / `scheduling --slots`), the two
 things that look like a broken pack and are not (a second install on a project that already
-dispatches elsewhere; a redeploy invalidating every **suspended** run), and disposable test projects:
-**`craft-testing`**.
+dispatches elsewhere; a redeploy invalidating every **suspended** run), and disposable test projects
+are all in the KB's testing guide.
 
-Before you call it done, make the pre-ship pass at the end of **`craft-testing`** — a dozen defects
-that pass every gate, deploy cleanly, and are visible only to the customer. `validate` cannot see any
-of them.
+Before you call it done, make the pre-ship pass at the end of that same testing guide — a dozen
+defects that pass every gate, deploy cleanly, and are visible only to the customer. `validate` cannot
+see any of them.
 
-## Step 4 — Report what you learned
+## Step 4 — Report what you learned, and read what comes back
 
 Once you reach ✓ live — especially if it took several tries — write `FEEDBACK.md` in your pack
 directory and send it with **`octwin feedback`**. Report only what you actually hit, cite the exact
-error text, and group each finding by the owner who can fix it. The template and the reporting rules:
-**`craft-feedback`**.
+error text, and group each finding by the owner who can fix it. The template and the reporting rules
+live in the KB's feedback guide.
+
+**The channel answers, so read it.** When any command prints `✉ N memos from the platform`, run
+**`octwin memos`** and act on them **before continuing** — do not finish the task first. Two kinds
+arrive: a reply to a report you sent, and a notice published to every author (a new capability, a
+deprecation, a breaking change). This matters because the thing you are about to work around may
+already be fixed: in August 2026 an author hardcoded English across 16 flows to avoid a `$t()` bug
+that had been fixed two days earlier, because nothing could tell them. Reading marks them read, so
+the reminder stops; `octwin memos --all` re-reads history.
 
 ## Guardrails
 
@@ -162,7 +162,7 @@ error text, and group each finding by the owner who can fix it. The template and
 - **Resolve every platform name through `SYMBOLS.md` before you write it.** A `do:` step, an `args:`
   key, a `$function()`, a render-intent field, a node op-key, a key in a declaration file — grep the
   name, open the file the row points at, write what it says. This is the procedure behind "if it
-  isn't in the KB it doesn't exist": a name absent from that table does not exist, and the reason to
+  isn't in the KB it doesn't exist": a name absent from that map does not exist, and the reason to
   grep rather than recall is that an invented name reads exactly like a real one.
 - **Don't invent structure.** Scaffold with `octwin init`; check the pulled KB rather than guessing.
 - **Locale everything.** All user-visible copy lives in the locale file; a bare or missing `$t` key

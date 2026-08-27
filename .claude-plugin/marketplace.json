@@ -1,10 +1,14 @@
 {
   "name": "octwin-claude-marketplace",
+  "description": "CEQUENS Octwin — author pure-YAML conversational bots for WhatsApp and web, and deploy them to your own Octwin platform.",
+  "metadata": {
+    "description": "CEQUENS Octwin — author pure-YAML conversational bots for WhatsApp and web, and deploy them to your own Octwin platform."
+  },
   "owner": { "name": "CEQUENS" },
   "plugins": [
     {
-      "name": "octwin-pack-author",
-      "source": "./",
+      "name": "octwin",
+      "source": "./plugins/octwin",
       "description": "Author pure-YAML Octwin packs (WhatsApp/web conversational bots) and deploy them with octwin-cli."
     }
   ]

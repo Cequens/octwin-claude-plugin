@@ -1,9 +1,45 @@
-# Changelog — octwin-pack-author (Claude Code plugin)
+# Changelog — octwin (Claude Code plugin)
 
-All notable changes to the `octwin-pack-author` plugin — the **`octwin-pack`** authoring skill.
+All notable changes to the `octwin` plugin — the **`octwin-pack`** authoring skill.
 Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
-The platform-wide view lives in the repo root [`CHANGELOG.md`](../../CHANGELOG.md); the companion CLI
-has its own [`packages/octwin-cli/CHANGELOG.md`](../octwin-cli/CHANGELOG.md).
+The companion CLI publishes its own release notes on
+[npm](https://www.npmjs.com/package/octwin-cli).
+
+## [0.2.0] - 2026-08-27
+
+### Changed
+- **BREAKING — the plugin is renamed `octwin`** (formerly `octwin-pack-author`). Claude Code has no
+  rename mechanism, so the old name is a *different* plugin: uninstall it and run
+  `/plugin install octwin@octwin-claude-marketplace`. The marketplace name, the repo, the skill name
+  and both commands are unchanged; the namespaced form is now `/octwin:octwin-pack`, and the bare
+  `/octwin-pack` still works.
+- **The skill names no KB guide, no capability and no count.** The KB is republished far more often
+  than this plugin, so every enumeration inside the plugin was stale between releases — the README
+  had drifted to 6 guides against the skill's 17, and claimed a template was inlined that had moved
+  to the KB. `SKILL.md` now routes through `INDEX.md` in the pulled reference and holds only the
+  workflow: the two framing rules, the `octwin` command sequence, and the guardrails. Adding a guide
+  to the KB no longer requires publishing this plugin.
+- **`homepage` points at this repo**, not the CLI's npm page — Claude Code sends users to `homepage`
+  for usage guidance, and they were landing on the wrong docs.
+
+### Added
+- **`license` and `allowed-tools` in the skill frontmatter.** `allowed-tools: Bash(octwin *)
+  PowerShell(octwin *)` pre-approves the CLI on both shells — they are separate tools with separate
+  permission rules, and PowerShell is the default on Windows without Git Bash. `npm i -g` still
+  prompts, deliberately. Both fields are in the Agent Skills spec, so the file stays portable.
+- **CI in this repo** — `claude plugin validate` over the marketplace catalog and the plugin
+  manifest, on every push.
+- **A "what this plugin does on your machine" section** in the README, plus post-install activation,
+  the marketplace-update command, and the warning that removing a marketplace uninstalls its plugins.
+
+### Fixed
+- **Links that only broke once published.** The README and this file linked to the platform monorepo
+  with paths that resolve there and 404 here. The publish script now refuses to mirror a link that
+  escapes the plugin repo.
+
+### Removed
+- **The repo root is no longer the plugin payload.** The plugin moved to `plugins/octwin/`, so the
+  marketplace catalog, CI and the repo README stop being copied into every user's install cache.
 
 ## [0.1.12] - 2026-08-09
 
