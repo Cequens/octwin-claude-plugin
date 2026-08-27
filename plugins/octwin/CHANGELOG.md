@@ -5,7 +5,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
 The companion CLI publishes its own release notes on
 [npm](https://www.npmjs.com/package/octwin-cli).
 
-## [0.2.0] - 2026-08-27
+## [0.2.2] - 2026-08-27
+
+> Supersedes 0.2.1, which shipped this same content minutes earlier under a version its own
+> changelog heading did not name: the publish script read the published version from the *new*
+> payload path, found nothing there because the move had not landed yet, and bumped a patch it
+> should not have. Fixed in the script — with no published manifest to compare against, it now
+> ships the version the source declares.
 
 ### Changed
 - **BREAKING — the plugin is renamed `octwin`** (formerly `octwin-pack-author`). Claude Code has no
