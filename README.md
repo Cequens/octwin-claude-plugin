@@ -41,14 +41,21 @@ through `octwin login` / `octwin deploy` to test live on your tenant.
 
 ### Staying current
 
-This plugin releases often. To pull the latest without waiting on background refresh:
+This plugin releases often. To pull the latest without waiting on background refresh, run **both** —
+the first refreshes the catalog, the second moves *your install*:
 
 ```
 /plugin marketplace update octwin-claude-marketplace
+/plugin update octwin@octwin-claude-marketplace
 ```
 
+**The first alone is not enough.** Measured 2026-08-27: after `marketplace update` reported success,
+the installed plugin was still on the previous version until `plugin update` ran. You can also manage
+auto-update per marketplace under `/plugin` → Marketplaces — but do not rely on it: on the
+maintainer's own machine the plugin sat **six releases behind** what was published.
+
 The marketplace name (`octwin-claude-marketplace`) is **not** the repo slug, and it is the name you
-need for updating. You can also manage auto-update per marketplace under `/plugin` → Marketplaces.
+need in both commands.
 
 > ⚠️ Use `update`, never `remove`. Removing a marketplace from its last remaining scope
 > **uninstalls every plugin you installed from it.**

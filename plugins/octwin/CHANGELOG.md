@@ -5,6 +5,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
 The companion CLI publishes its own release notes on
 [npm](https://www.npmjs.com/package/octwin-cli).
 
+## [0.2.4] - 2026-08-27
+
+### Fixed
+- **The update instructions stopped one command short.** `/plugin marketplace update` refreshes the
+  catalog but does **not** move your install: measured on a real upgrade, the plugin stayed on the
+  previous version until `/plugin update octwin@octwin-claude-marketplace` ran. The README now gives
+  both, and says plainly not to rely on auto-update — on the maintainer's own machine the plugin was
+  six releases behind what was published.
+
 ## [0.2.3] - 2026-08-27
 
 ### Fixed
