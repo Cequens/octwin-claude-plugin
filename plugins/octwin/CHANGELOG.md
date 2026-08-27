@@ -5,6 +5,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
 The companion CLI publishes its own release notes on
 [npm](https://www.npmjs.com/package/octwin-cli).
 
+## [0.2.3] - 2026-08-27
+
+### Fixed
+- **The upgrade note told you to run a command that does not work.** Renaming a plugin *strands* the
+  old install: once the marketplace catalog stops listing `octwin-pack-author`,
+  `claude plugin uninstall octwin-pack-author@octwin-claude-marketplace` answers
+  `not found in installed plugins`, while `claude plugin list` still shows it **enabled** and its
+  cached skill still loads. Measured on a real install. The README now says to delete the entry from
+  `enabledPlugins` in `~/.claude/settings.json` by hand.
+
 ## [0.2.2] - 2026-08-27
 
 > Supersedes 0.2.1, which shipped this same content minutes earlier under a version its own

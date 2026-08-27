@@ -54,7 +54,22 @@ need for updating. You can also manage auto-update per marketplace under `/plugi
 > **uninstalls every plugin you installed from it.**
 
 > **Upgrading from `octwin-pack-author`?** That was the plugin's name before 0.2.0. Claude Code has no
-> rename mechanism, so the old name is a different plugin: uninstall it and install `octwin` above.
+> rename mechanism, so the old name is a *different* plugin. Install `octwin` above, then remove the
+> old entry **by hand** — the obvious command does not work:
+>
+> ```
+> claude plugin uninstall octwin-pack-author@octwin-claude-marketplace
+> → ✘ Plugin "octwin-pack-author@octwin-claude-marketplace" not found in installed plugins
+> ```
+>
+> Once the marketplace stops listing that name, `uninstall` can no longer resolve it — while
+> `claude plugin list` still shows it **enabled** and its cached skill still loads. Measured
+> 2026-08-27. Delete its line from the `enabledPlugins` block of `~/.claude/settings.json` instead:
+>
+> ```json
+> "octwin-pack-author@octwin-claude-marketplace": true,
+> ```
+>
 > The skill and its commands are otherwise unchanged.
 
 ## What this plugin does on your machine
