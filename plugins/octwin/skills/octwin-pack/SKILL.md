@@ -116,13 +116,25 @@ project-resolution errors mean is in the KB — `INDEX.md`'s symptom table route
 ## Step 3 — Deploy and drive it
 
 ```bash
-# one-time (console → your workspace → API tokens → Generate):
-octwin login --url https://your-octwin.example.com --token oct_…
+octwin login --url https://your-octwin.example.com   # one-time — approve it in a browser
 
 octwin projects            # the --project slugs this token can name
 octwin deploy --seed       # --seed also loads the demo data xrm.yaml declares
 octwin status              # "✓ live and current" once it's warm
 ```
+
+**`octwin login` prints an approval link, then waits 90 seconds.** Relay the link exactly as
+printed and ask them to open it and click Approve; when they say they have, run `octwin login`
+again — it resumes the same request (valid 10 minutes) and saves a 30-day token. Exit code `75`
+means *still waiting*, not failure; `0` means signed in.
+
+**Never ask the user to paste a token to you.** That is what this flow removes: an `oct_…` token in
+a chat transcript is a live workspace credential. The link is not one — it only asks *them* to
+approve, in their own browser, as themselves.
+
+For CI, skip `login` and set `PACK_PLATFORM_URL` + `PACK_TOKEN`. To choose narrower scopes or a
+different expiry, mint a token by hand (console → your workspace → API tokens → Generate) and pass
+it with `octwin login --token oct_…`.
 
 Then drive it from the terminal — `octwin chat` prints every render **with its tap id**, so you can
 press buttons headlessly, and `octwin logs <conversationId>` shows the full turn timeline.
@@ -167,6 +179,11 @@ the reminder stops; `octwin memos --all` re-reads history.
 - **Don't invent structure.** Scaffold with `octwin init`; check the pulled KB rather than guessing.
 - **Locale everything.** All user-visible copy lives in the locale file; a bare or missing `$t` key
   fails validation.
+- **Ship one language, or keep them identical.** A one-language pack is a finished state and is
+  never nagged. Ship two and every language needs the same key set and the same `{placeholders}` —
+  `$t()` falls back *across* languages, so a gap is a silent language switch rather than an error.
+  Declaring `supported_languages:` in the manifest is optional, and makes the platform hold you to
+  the list in both directions.
 - **The renderer owns caps, paging and splitting.** Never clamp, slice or read a channel limit in your
   YAML. Litmus: *would this value change if WhatsApp were swapped for web?* Then it isn't yours.
 - **Version is a string.** `version: '1.0.0'` — a bare `1` is a number and fails.

@@ -5,6 +5,26 @@ Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
 The companion CLI publishes its own release notes on
 [npm](https://www.npmjs.com/package/octwin-cli).
 
+## [0.2.5] - 2026-09-06
+
+### Changed
+- **Step 3 signs in through the browser — you no longer paste a token to the agent.**
+  `octwin login --url <your platform>` now prints an approval link instead of asking for a key you
+  minted by hand. A workspace admin opens it, checks which machine is asking, and clicks Approve;
+  the CLI collects a 30-day token by itself.
+
+  This is why the step changed, and the skill now says it outright: the old instruction ended with a
+  human pasting a live `oct_…` into a conversation — a workspace credential, sitting in a
+  transcript. The agent's part is now to relay a public URL, wait to be told it was approved, and
+  run `octwin login` again.
+
+  The skill also states the exit codes, because an agent should branch on them rather than read
+  prose: `0` signed in, `75` still waiting (the wait is bounded at 90s and resumes on the same
+  request, which lives ten minutes), `1` failed.
+
+  Needs **octwin-cli 0.8.8 or newer**. `--token` still works unchanged, and CI should still skip
+  login and set `PACK_PLATFORM_URL` + `PACK_TOKEN`.
+
 ## [0.2.4] - 2026-08-27
 
 ### Fixed
