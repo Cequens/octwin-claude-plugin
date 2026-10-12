@@ -5,6 +5,30 @@ Format: [Keep a Changelog](https://keepachangelog.com/) — newest first.
 The companion CLI publishes its own release notes on
 [npm](https://www.npmjs.com/package/octwin-cli).
 
+## [0.2.6] - 2026-10-12
+
+### Changed
+- **The skill says what `octwin init` gives you.** It starts you with the home hub — the first of the
+  three patterns — not all three; the others come from the KB's recipes. The plugin README asks for
+  Node 22 (what `octwin-cli` requires), says a workspace is enough to start (pulling and validating
+  need no login; deploying signs you in through the browser), and names both places the CLI writes:
+  your project's `.octwin/` and `~/.octwin/` in your home folder.
+- **The skill now calls what you build an AI Agent.** Five lines, the description among them
+  — it keeps "chatbot" so the skill is still found by the word a developer types. The pulled KB it
+  points at made the same change in 41 places, and the platform's brand gate now reads both, so
+  the word cannot drift back.
+- **Step 0 says to delete the scaffold files you do not keep.** A scaffold flow left behind with its
+  `flows:` line removed never loads, but its copy is still checked — a pack that adds a second language
+  then fails validation over a flow nobody uses. Found when an AI author built a clinic pack from the
+  scaffold and left the example flow in place.
+- **A pack that is already live starts from `octwin pull`, not a scaffold.** A short step after Step 0:
+  pull the version your project runs, follow the pulled KB's route for changing a live agent before
+  touching a declaration, and deploy under a bumped `version:` without `--seed`. Some changes that
+  validate cleanly still break a live pack's records, conversations in progress or old buttons.
+- **Step 2 is one command.** `octwin validate` runs the platform's full check by default and needs no
+  login for it; the skill now tells you to read the LAST line, which says *PARTIAL* when only the
+  offline half could run.
+
 ## [0.2.5] - 2026-09-06
 
 ### Changed

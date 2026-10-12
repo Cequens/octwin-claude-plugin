@@ -85,8 +85,9 @@ Worth knowing before you install anything from a repo you don't own:
 
 - **Installs a CLI globally** — the skill's first step is `npm i -g octwin-cli`. This is left to prompt
   for your approval on purpose.
-- **Writes inside your project only** — the pack you are authoring, plus a `.octwin/` directory
-  holding the pulled capability reference and your saved login.
+- **Writes in two places** — inside your project, the pack you are authoring plus a `.octwin/`
+  directory holding the pulled capability reference; in your home folder, `~/.octwin/` holding your
+  saved login and the CLI's update check.
 - **Talks to one host: the platform URL you supply.** There is no telemetry endpoint and no other
   network destination. `octwin feedback` sends a report to that same platform, and only when you run it.
 - **Ships no executable code.** The plugin is one Markdown file.
@@ -106,8 +107,9 @@ which one Claude Code uses depends on your platform. `npm i -g` is intentionally
 
 ## Requirements
 
-- **Claude Code** + **Node.js ≥ 20**
-- An **Octwin platform**, a **tenant**, and a **deploy token** (for pull/deploy) — see the
+- **Claude Code** + **Node.js ≥ 22** (what `octwin-cli` requires)
+- An **Octwin platform** and a **workspace** to deploy to. Pulling the reference and validating need no
+  login; `octwin login` signs you in through the browser when you first deploy — see the
   [`octwin-cli`](https://www.npmjs.com/package/octwin-cli) docs.
 
 ## What's in here

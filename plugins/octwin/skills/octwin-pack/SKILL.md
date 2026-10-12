@@ -1,13 +1,13 @@
 ---
 name: octwin-pack
-description: Author a pure-YAML Octwin pack — a WhatsApp/web conversational bot declared entirely in YAML — and deploy it to your tenant with octwin-cli. Use when the user wants to build, scaffold, or extend an Octwin pack (its agent, conversation flows, and data) for their own business, with no platform checkout and no TypeScript.
+description: Author a pure-YAML Octwin pack — a WhatsApp/web AI Agent (chatbot) declared entirely in YAML — and deploy it to your tenant with octwin-cli. Use when the user wants to build, scaffold, or extend an Octwin pack (its agent, conversation flows, and data) for their own business, with no platform checkout and no TypeScript.
 license: MIT
 allowed-tools: Bash(octwin *) PowerShell(octwin *)
 ---
 
 # Authoring an Octwin pack (pure-YAML)
 
-An **Octwin pack** is a self-contained conversational bot for WhatsApp + web — its agent, its
+An **Octwin pack** is a self-contained AI Agent for WhatsApp + web — its agent, its
 conversation **flows**, its prompts, and its data model — declared **entirely in YAML**. You build it
 in your own repo and deploy it to a running Octwin platform with the
 [`octwin`](https://www.npmjs.com/package/octwin-cli) CLI; the platform runs it on your tenant.
@@ -26,7 +26,7 @@ Two rules frame everything:
   your data model is declared in `xrm.yaml` (a pack owns no database). This is what lets the platform
   safely run your pack, and the server enforces it on every deploy.
 - **Scaffold, then customize.** Never hand-write pack boilerplate from memory — start from
-  `octwin init` and edit. The scaffold is a real, valid, chattable hello-bot.
+  `octwin init` and edit. The scaffold is a real, valid AI Agent you can chat with.
 
 ## Step 0 — Install the CLI and scaffold
 
@@ -35,7 +35,7 @@ npm i -g octwin-cli        # install once; then `octwin <cmd>` everywhere below
 octwin --version           # confirm it's on the current release
 # No-install fallback (CI, or can't install globally): npx octwin-cli@latest <cmd>
 
-octwin init ./my-pack --id my-pack --description "What the bot does"
+octwin init ./my-pack --id my-pack --description "What the AI Agent does"
 cd ./my-pack
 ```
 
@@ -43,6 +43,25 @@ This writes a minimal, valid, chattable pack that already models the **home-hub*
 file before editing — the layout IS the contract**, and the scaffold answers most "where does this
 go?" questions before you have to ask them. The directory is pack content only; your deploy target
 lives in your saved login (Step 3), never in a file here.
+
+**Delete every scaffold file you do not keep.** The scaffold's example tool is marked `EXAMPLE` in its
+header. When you replace it, delete its flow file, every one of its `*.locale.<lang>.yaml` files, and
+its `flows:` line — together. A flow file left behind with its `flows:` line removed never loads, but
+its copy is still checked, so a pack that adds a second language fails validation over a flow nobody
+uses.
+
+### Changing a pack that is already live
+
+Customers already use it, so start from what they use — not from a scaffold:
+
+```bash
+octwin pull <packId>       # the version your project runs, written to ./<packId>
+```
+
+Then pull the reference (Step 0.5) and follow `INDEX.md`'s route for changing a live agent **before**
+you touch a declaration: a live pack has real records, conversations in progress and buttons in old
+chats, and some changes that validate cleanly still break them. Validate, then deploy under a bumped
+`version:` — **without `--seed`**, which is for test projects.
 
 ## Step 0.5 — Pull the capability reference
 
@@ -78,15 +97,15 @@ stale; `octwin platform-kb --check` reports the same thing as an exit code (0 cu
 ## Step 1 — Author the domain
 
 > **Build a product, not a bag of tools.** A pack is a **guided product with a front door**. Three
-> patterns make it one — every reference pack uses all three, and `octwin init` scaffolds them: a
-> **home hub** (the menu the agent opens on a greeting / unclear message, wired FIRST in `flows` + the
+> patterns make it one — every reference pack uses all three, and `octwin init` starts you with the
+> first: a **home hub** (the menu the agent opens on a greeting / unclear message, wired FIRST in `flows` + the
 > agent's `tools`), **rich interaction** (icons + a `carousel` for photo lists), and a
 > **confirmation before any committing action**. Read the KB's UX guide before you build the flows.
 
 Every decision you are about to make — what the pack declares, how a flow is written, how records are
 stored and rendered, what happens when a fetch returns nothing or too much, what happens when a record
 moves without a flow touching it, how the agent is instructed, how you reach a customer who isn't
-typing, and what happens when the bot can't help — has **one authoritative guide** in the pulled KB
+typing, and what happens when the AI Agent can't help — has **one authoritative guide** in the pulled KB
 (`.octwin/platform-kb/`). Capability-specific ones (bookings, selling, another system, campaigns) sit
 beside them.
 
@@ -101,17 +120,23 @@ happens next. Keep it brief.
 ## Step 2 — Validate
 
 ```bash
-octwin validate            # offline: structure, the pure-YAML rules, + the checks driven by the pulled KB
-octwin validate --remote   # the platform's FULL check — every error in ONE pass
+octwin validate --url https://your-octwin.example.com   # the platform's FULL check — every error in ONE pass
 ```
 
-Run **both**, in that order. The offline run replays the platform's own contracts from the reference
-you pulled in Step 0.5 — render-intent fields, primitive arguments, `$function()` names, `use:`
-template params, reserved entity keys, and the declaration files' schemas — with no server and no
-token. Add `--require-kb` in CI so a missing reference fails the build instead of quietly skipping
-those checks. `--remote` runs the *exact* validation `deploy` runs, so it turns eight
-fix-one-error-and-redeploy cycles into one. (`octwin test` is an alias for it.) What its
-project-resolution errors mean is in the KB — `INDEX.md`'s symptom table routes you to the guide.
+One command runs both halves, in order. First the fast **offline** checks: they replay the platform's
+own contracts from the reference you pulled in Step 0.5 (render-intent fields, primitive arguments,
+`$function()` names, `use:` template params, reserved entity keys, the declaration files' schemas).
+Then the platform's **full** check — the *exact* validation `deploy` runs — which turns eight
+fix-one-error-and-redeploy cycles into one. It needs **no login**: the url alone is enough (after
+`octwin login`, your saved url is used). With a token **and** `--project <slug>`, it runs through your
+workspace instead and also confirms that project exists — do that right before a deploy.
+
+**Read the LAST line.** If it says *"only the OFFLINE check ran — a PARTIAL check"*, the full check did
+not run (no url, offline, or rate-limited) and a green result proves little: the offline half misses
+things the full check refuses. `--remote` turns a skipped full check into an error; `--offline` runs
+only the offline half; add `--require-kb` in CI so a missing reference fails the build instead of
+quietly skipping those checks. (`octwin test` is `validate --remote`.) What its project-resolution
+errors mean is in the KB — `INDEX.md`'s symptom table routes you to the guide.
 
 ## Step 3 — Deploy and drive it
 
